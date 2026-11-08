@@ -1,0 +1,1949 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F5C45">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px/1.4 system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Placar da Cacheta</title>
+<meta name="description" content="Marque os pontos da cacheta no celular: quem corre, quem perde, quem ganha e quem sai do jogo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;family=Caveat:wght@600;700&amp;display=swap">
+<style>
+/* Conceito: a mesa de cacheta. Faixa verde de feltro no topo; embaixo, uma folha clara com
+   todo mundo na mesma tela, uma linha por pessoa. Caneta vermelha mostra o que vai mudar antes
+   de anotar; dourado marca quem ganhou. Coluna única, alinhada à esquerda, sem rolar na partida. */
+:root {
+  --feltro: #0F5C45;
+  --sobre-feltro: #FFFFFF;
+  --sobre-feltro-2: rgba(255, 255, 255, .76);
+  --borda-feltro: rgba(255, 255, 255, .42);
+  --realce-feltro: rgba(255, 255, 255, .12);
+  --folha: #FFFFFF;
+  --folha-2: #F1F4F2;
+  --linha: #E2E8E4;
+  --linha-forte: #C9D3CD;
+  --texto: #16201B;
+  --texto-2: #56645D;
+  --texto-3: #8B9790;
+  --principal: #0F5C45;
+  --principal-texto: #0F5C45;
+  --sobre-principal: #FFFFFF;
+  --foco: #0F5C45;
+  --anel: rgba(15, 92, 69, .2);
+  --correu: #2D57A8;
+  --correu-claro: #EAF0FC;
+  --perdeu: #C22234;
+  --perdeu-claro: #FDECEE;
+  --sobre-perdeu: #FFFFFF;
+  --ouro: #F2C230;
+  --ouro-claro: #FFF7DB;
+  --sobre-ouro: #2A2000;
+  --marca-texto: rgba(242, 194, 48, .5);
+  --sombra: rgba(12, 34, 25, .18);
+  --veu: rgba(6, 18, 12, .5);
+  --fundo-aviso: #16201B;
+  --texto-aviso: #FFFFFF;
+  --fonte: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --caneta: "Caveat", "Segoe Print", "Bradley Hand", "Lexend", sans-serif;
+  --coluna: 520px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --feltro: #0C4A38; --sobre-feltro: #EEF5F1; --sobre-feltro-2: rgba(238, 245, 241, .72);
+    --borda-feltro: rgba(238, 245, 241, .36); --realce-feltro: rgba(238, 245, 241, .1);
+    --folha: #101814; --folha-2: #17211C; --linha: #223029; --linha-forte: #33443B;
+    --texto: #E6EEE9; --texto-2: #9DACA4; --texto-3: #6E7D75;
+    --principal: #3DBE8E; --principal-texto: #6BD3AB; --sobre-principal: #04140D;
+    --foco: #6BD3AB; --anel: rgba(107, 211, 171, .25);
+    --correu: #93B4FF; --correu-claro: rgba(147, 180, 255, .14);
+    --perdeu: #FF8794; --perdeu-claro: rgba(255, 135, 148, .14); --sobre-perdeu: #1A0507;
+    --ouro: #F2CA4E; --ouro-claro: rgba(242, 202, 78, .12); --sobre-ouro: #1E1700;
+    --marca-texto: rgba(242, 202, 78, .3);
+    --sombra: rgba(0, 0, 0, .5); --veu: rgba(0, 0, 0, .62);
+    --fundo-aviso: #E6EEE9; --texto-aviso: #101814;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --feltro: #0C4A38; --sobre-feltro: #EEF5F1; --sobre-feltro-2: rgba(238, 245, 241, .72);
+  --borda-feltro: rgba(238, 245, 241, .36); --realce-feltro: rgba(238, 245, 241, .1);
+  --folha: #101814; --folha-2: #17211C; --linha: #223029; --linha-forte: #33443B;
+  --texto: #E6EEE9; --texto-2: #9DACA4; --texto-3: #6E7D75;
+  --principal: #3DBE8E; --principal-texto: #6BD3AB; --sobre-principal: #04140D;
+  --foco: #6BD3AB; --anel: rgba(107, 211, 171, .25);
+  --correu: #93B4FF; --correu-claro: rgba(147, 180, 255, .14);
+  --perdeu: #FF8794; --perdeu-claro: rgba(255, 135, 148, .14); --sobre-perdeu: #1A0507;
+  --ouro: #F2CA4E; --ouro-claro: rgba(242, 202, 78, .12); --sobre-ouro: #1E1700;
+  --marca-texto: rgba(242, 202, 78, .3);
+  --sombra: rgba(0, 0, 0, .5); --veu: rgba(0, 0, 0, .62);
+  --fundo-aviso: #E6EEE9; --texto-aviso: #101814;
+  color-scheme: dark;
+}
+
+/* ---------- Base ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+body {
+  background: var(--folha);
+  color: var(--texto);
+  font-family: var(--fonte);
+  font-size: 16px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+/* pinta de verde a faixa do relógio do celular, acima do topo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0 0 auto;
+  height: env(safe-area-inset-top, 0px);
+  z-index: 10;
+  background: var(--feltro);
+  pointer-events: none;
+}
+h1, h2, h3, p, ul, ol { margin: 0; }
+button, input, textarea, output { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: not-allowed; }
+:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
+b, strong { font-weight: 600; }
+.sr {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Estrutura: faixa no topo, conteúdo no meio, barra embaixo ---------- */
+.app { height: 100%; display: flex; flex-direction: column; overflow-x: clip; }
+.faixa-dentro, .coluna, .barra-dentro {
+  width: 100%;
+  max-width: var(--coluna);
+  margin-inline: auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.faixa { flex: none; background: var(--feltro); color: var(--sobre-feltro); }
+.faixa-dentro {
+  min-height: 68px;
+  padding-block: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.faixa-texto { min-width: 0; }
+.rodada { font-size: 1.55rem; font-weight: 700; line-height: 1.1; letter-spacing: -.01em; white-space: nowrap; }
+.marca { font-family: var(--caneta); font-weight: 700; font-size: 2.6rem; line-height: .85; }
+.faixa-sub { margin-top: 3px; font-size: .88rem; color: var(--sobre-feltro-2); }
+.faixa-acoes { flex: none; display: flex; align-items: center; gap: 4px; }
+.btn-faixa {
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--borda-feltro);
+  background: transparent;
+  color: var(--sobre-feltro);
+  font-weight: 600;
+  font-size: .9rem;
+}
+.btn-faixa-icone {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--sobre-feltro);
+  display: grid;
+  place-items: center;
+}
+.faixa :focus-visible { outline-color: var(--sobre-feltro); }
+@media (hover: hover) {
+  .btn-faixa:hover, .btn-faixa-icone:hover { background: var(--realce-feltro); }
+}
+.principal { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+.coluna { padding-block: 2px 16px; }
+.barra { flex: none; background: var(--folha); border-top: 1px solid var(--linha); }
+.barra-dentro { padding-block: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+
+/* ---------- Botões ---------- */
+.btn {
+  appearance: none;
+  border: 0;
+  min-height: 52px;
+  padding: 0 18px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1.2;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color .15s, color .15s, transform .1s;
+}
+.btn:active:not(:disabled) { transform: scale(.98); }
+.btn-principal { background: var(--principal); color: var(--sobre-principal); }
+.btn-principal:disabled { background: var(--folha-2); color: var(--texto-3); }
+.btn-secundario { background: var(--folha-2); color: var(--texto); box-shadow: inset 0 0 0 1px var(--linha); }
+.btn-secundario:disabled { color: var(--texto-3); }
+.btn-perigo { background: var(--perdeu); color: var(--sobre-perdeu); }
+.btn-link {
+  justify-self: start;
+  min-height: 44px;
+  padding: 8px 2px;
+  border: 0;
+  background: none;
+  color: var(--principal-texto);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+.btn-icone {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--texto-2);
+  display: grid;
+  place-items: center;
+}
+@media (hover: hover) {
+  .btn-secundario:hover:not(:disabled) { background: var(--linha); }
+  .btn-icone:hover { background: var(--folha-2); }
+}
+.acoes { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; }
+.resumo {
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  font-size: .92rem;
+  line-height: 1.3;
+  color: var(--texto-2);
+}
+.resumo[data-tipo="ok"] { color: var(--texto); }
+.resumo[data-tipo="alerta"] { color: var(--perdeu); font-weight: 600; }
+.resumo b { font-weight: 700; }
+.txt-perdeu { color: var(--perdeu); font-weight: 600; }
+
+/* ---------- Preparação ---------- */
+.form-nome { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding-top: 16px; }
+.rotulo { font-weight: 600; font-size: 1.02rem; }
+.campo-linha { display: flex; gap: 8px; }
+.campo {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  height: 50px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1.5px solid var(--linha-forte);
+  background: var(--folha);
+  color: var(--texto);
+  font-size: 1.05rem;
+}
+.campo::placeholder { color: var(--texto-3); }
+.campo:focus { outline: none; border-color: var(--foco); box-shadow: 0 0 0 3px var(--anel); }
+.btn-adicionar { flex: none; min-height: 50px; background: var(--folha-2); color: var(--principal-texto); box-shadow: inset 0 0 0 1px var(--linha-forte); }
+.erro { color: var(--perdeu); font-weight: 600; font-size: .9rem; }
+.erro:empty { display: none; }
+.recentes { padding-top: 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.rotulo-pequeno { font-size: .86rem; color: var(--texto-2); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  min-height: 42px;
+  padding: 0 14px 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--linha-forte);
+  background: var(--folha);
+  color: var(--texto);
+  font-weight: 500;
+  font-size: .95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.chip-mais { color: var(--principal-texto); font-weight: 700; }
+.lista-nomes { list-style: none; padding: 0; margin-top: 14px; border-top: 1px solid var(--linha); }
+.nome-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 50px; border-bottom: 1px solid var(--linha); }
+.nome-linha-texto { min-width: 0; font-size: 1.06rem; font-weight: 600; overflow-wrap: anywhere; }
+.vazio { padding-block: 14px; color: var(--texto-2); font-size: .95rem; border-bottom: 1px solid var(--linha); }
+.linhas-extra { margin-top: 22px; border-top: 1px solid var(--linha); }
+.linha-extra {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--linha);
+  background: none;
+  text-align: left;
+  font-weight: 600;
+  font-size: .98rem;
+  color: var(--texto);
+}
+.linha-extra span { font-weight: 400; font-size: .86rem; color: var(--texto-2); text-align: right; }
+
+/* ---------- Partida ---------- */
+.mesa { list-style: none; padding: 0; }
+.jogador {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 10px;
+  min-height: var(--linha-altura, 66px);
+  margin-inline: -8px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--linha);
+  transition: background-color .2s;
+}
+.jogador.is-ganhou { background: var(--ouro-claro); }
+.quem { min-width: 0; display: grid; gap: 2px; }
+.nome {
+  font-size: 1.06rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  transition: color .2s;
+}
+.jogador.is-correu .nome { color: var(--texto-2); }
+.placar { position: relative; display: flex; align-items: baseline; flex-wrap: wrap; column-gap: 8px; }
+.num { position: relative; font-size: 1.5rem; font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; transition: color .2s; }
+.jogador.is-perde .num { color: var(--texto-3); }
+.jogador.is-perde .num::after {
+  content: "";
+  position: absolute;
+  left: -16%;
+  right: -16%;
+  top: 52%;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--perdeu);
+  transform: rotate(-14deg);
+  animation: risca .22s ease-out backwards;
+}
+.novo { font-family: var(--caneta); font-weight: 700; font-size: 1.9rem; line-height: .8; color: var(--perdeu); animation: escreve .3s ease-out backwards; }
+.novo:empty { display: none; }
+.aviso { font-size: .78rem; font-weight: 600; color: var(--perdeu); }
+.jogador.is-perde .aviso { display: none; }
+.perda-flutua {
+  position: absolute;
+  left: 2.4em;
+  top: -.5em;
+  font-family: var(--caneta);
+  font-weight: 700;
+  font-size: 1.6rem;
+  color: var(--perdeu);
+  pointer-events: none;
+  animation: flutua 1.4s ease-out forwards;
+}
+.escolha {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 58px);
+  gap: 5px;
+}
+.opcao { position: relative; display: block; }
+.opcao input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.opcao input:disabled { cursor: not-allowed; }
+.opcao > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 2px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: var(--folha-2);
+  color: var(--texto-2);
+  font-size: .8rem;
+  font-weight: 600;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: background-color .15s, color .15s, border-color .15s;
+}
+.opcao-correu input:checked + span { background: var(--correu-claro); border-color: var(--correu); color: var(--correu); }
+.opcao-perdeu input:checked + span,
+.jogador.is-perdeu-auto .opcao-perdeu > span { background: var(--perdeu-claro); border-color: var(--perdeu); color: var(--perdeu); }
+.opcao-ganhou input:checked + span,
+.jogador.is-ganhou-auto .opcao-ganhou > span { background: var(--ouro); border-color: var(--ouro); color: var(--sobre-ouro); }
+/* quando todos os outros correram, quem sobrou ganha sozinho, mesmo marcado em Perdeu */
+.jogador.is-ganhou-auto .opcao-perdeu input:checked + span { background: var(--folha-2); border-color: transparent; color: var(--texto-2); }
+.opcao input:focus-visible + span { outline: 3px solid var(--foco); outline-offset: 1px; }
+.opcao input:disabled + span { background: transparent; border: 1.5px dashed var(--linha-forte); color: var(--texto-3); text-decoration: line-through; }
+@media (hover: hover) {
+  .opcao input:not(:checked):not(:disabled):hover + span { border-color: var(--linha-forte); color: var(--texto); }
+}
+/* Muita gente na mesa ou tela baixa: tudo um pouco menor para caber sem rolar. */
+.mesa.compacta .jogador { padding-block: 4px; }
+.mesa.compacta .nome { font-size: .98rem; -webkit-line-clamp: 1; }
+.mesa.compacta .num { font-size: 1.28rem; }
+.mesa.compacta .novo { font-size: 1.6rem; }
+.mesa.compacta .opcao > span { height: 40px; }
+@media (min-width: 390px) {
+  .escolha { grid-template-columns: repeat(3, 64px); }
+  .opcao > span { font-size: .86rem; }
+}
+@media (max-width: 349px) {
+  .escolha { grid-template-columns: repeat(3, 52px); gap: 4px; }
+  .opcao > span { font-size: .74rem; }
+}
+@media (max-height: 720px) {
+  .faixa-dentro { min-height: 58px; padding-block: 8px; }
+  .rodada { font-size: 1.35rem; }
+  .marca { font-size: 2.2rem; }
+  .faixa-sub { margin-top: 1px; font-size: .8rem; }
+  .barra-dentro { padding-block: 8px 10px; gap: 6px; }
+  .resumo { min-height: 1.3em; font-size: .86rem; }
+  .acoes .btn { min-height: 48px; }
+}
+.fora { padding-top: 10px; font-size: .88rem; line-height: 1.5; color: var(--texto-2); }
+.fora s { font-weight: 600; text-decoration-color: var(--perdeu); text-decoration-thickness: 2px; }
+
+/* ---------- Fim de jogo ---------- */
+.fim { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; padding-top: 18px; }
+.campeao { display: grid; justify-items: start; gap: 2px; font-weight: 400; }
+.campeao-nome {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  padding: .1em .42em .16em;
+  font-family: var(--caneta);
+  font-weight: 700;
+  font-size: clamp(3rem, 15vw, 4.4rem);
+  line-height: 1;
+  color: var(--texto);
+  overflow-wrap: anywhere;
+}
+.campeao-texto {
+  padding-inline: .1em;
+  margin-inline: -.1em;
+  background: linear-gradient(var(--marca-texto), var(--marca-texto)) no-repeat 0 88% / 100% 44%;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.circulo { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.circulo path {
+  fill: none;
+  stroke: var(--perdeu);
+  stroke-width: 3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: circula 1s .3s cubic-bezier(.55, .1, .3, 1) forwards;
+}
+.campeao-frase { padding-left: .3em; font-size: 1.2rem; font-weight: 600; }
+.fim-detalhe { padding-left: .3em; color: var(--texto-2); font-size: .95rem; }
+.classificacao { list-style: none; padding: 0; border-top: 1px solid var(--linha); }
+.classificacao li {
+  display: grid;
+  grid-template-columns: 2.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding-block: 6px;
+  border-bottom: 1px solid var(--linha);
+}
+.pos { font-weight: 700; color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.classificacao .is-primeiro .pos { color: var(--texto); }
+.classificacao-nome { min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.como { font-size: .85rem; color: var(--texto-2); text-align: right; }
+.fim-links { display: flex; flex-wrap: wrap; gap: 0 22px; }
+
+/* ---------- Janelas ---------- */
+.dlg {
+  border: 0;
+  padding: 0;
+  color: var(--texto);
+  background: var(--folha);
+  box-shadow: 0 24px 60px var(--sombra);
+  max-height: calc(100% - 24px);
+  overflow: auto;
+}
+.dlg::backdrop { background: var(--veu); }
+.dlg-corpo {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  padding-top: 20px;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+}
+.dlg-baixo { width: 100%; max-width: var(--coluna); margin: auto auto 0; border-radius: 20px 20px 0 0; }
+.dlg-caixa { width: calc(100% - 32px); max-width: 440px; border-radius: 18px; }
+.dlg-cheio { width: 100%; max-width: 820px; height: 100%; max-height: 100%; margin: 0 auto; border-radius: 0; overflow: hidden; }
+.dlg-cheio .dlg-corpo { height: 100%; display: flex; flex-direction: column; padding-top: calc(14px + env(safe-area-inset-top, 0px)); }
+.dlg[open] { animation: entra .2s ease-out; }
+.dlg-baixo[open] { animation: sobe .24s cubic-bezier(.2, .8, .2, 1); }
+.dlg-titulo { font-size: 1.3rem; font-weight: 700; line-height: 1.2; }
+.dlg-subtitulo { margin-bottom: -6px; font-size: .95rem; font-weight: 700; }
+.dlg-botoes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+.dlg-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.lista-regras { padding-left: 1.2em; display: grid; gap: 6px; }
+.lista-regras li::marker { color: var(--principal-texto); font-weight: 700; }
+.menu-lista { display: grid; border-top: 1px solid var(--linha); }
+.menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 54px;
+  padding: 0 2px;
+  border: 0;
+  border-bottom: 1px solid var(--linha);
+  background: none;
+  text-align: left;
+  font-weight: 500;
+  font-size: 1rem;
+}
+.menu-perigo { color: var(--perdeu); }
+.menu-tema { flex-wrap: wrap; padding-block: 8px; }
+.tema-opcoes { display: flex; gap: 3px; padding: 3px; border-radius: 12px; background: var(--folha-2); }
+.tema-opcoes button {
+  min-height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: none;
+  font-weight: 600;
+  font-size: .9rem;
+  color: var(--texto-2);
+}
+.tema-opcoes button[aria-pressed="true"] { background: var(--folha); color: var(--texto); box-shadow: 0 1px 3px var(--sombra); }
+.alternar {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  position: relative;
+  width: 52px;
+  height: 32px;
+  margin: 0;
+  border-radius: 999px;
+  background: var(--linha-forte);
+  cursor: pointer;
+  transition: background-color .2s;
+}
+.alternar::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--folha);
+  box-shadow: 0 1px 3px var(--sombra);
+  transition: transform .2s;
+}
+.alternar:checked { background: var(--principal); }
+.alternar:checked::after { transform: translateX(20px); }
+.passo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; border-bottom: 1px solid var(--linha); }
+.passo-controle { flex: none; display: flex; align-items: center; gap: 6px; }
+.passo-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--linha-forte);
+  background: var(--folha-2);
+  color: var(--texto);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.passo-btn:disabled { opacity: .35; }
+.passo-valor { min-width: 2.2ch; text-align: center; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lista-simples { list-style: none; padding: 0; border-top: 1px solid var(--linha); }
+.lista-simples li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; border-bottom: 1px solid var(--linha); }
+.lista-simples li > span:last-child { color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.nota { font-size: .88rem; color: var(--texto-2); }
+.nomes-campos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.texto-copiar {
+  width: 100%;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--linha-forte);
+  background: var(--folha-2);
+  color: var(--texto);
+  font-size: 1rem;
+  resize: none;
+}
+
+/* ---------- Caderninho ---------- */
+.cad-rolagem { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
+.cad { width: 100%; min-width: calc(3rem + var(--colunas, 4) * 2.9rem); border-collapse: separate; border-spacing: 0; table-layout: fixed; font-variant-numeric: tabular-nums; }
+.cad th, .cad td { padding: 7px 2px; text-align: center; border-bottom: 1px solid var(--linha); }
+.cad .col-rodada { width: 3rem; }
+.cad thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--folha);
+  vertical-align: bottom;
+  font-size: .76rem;
+  font-weight: 600;
+  line-height: 1.15;
+  border-bottom: 1.5px solid var(--linha-forte);
+}
+.cad-nome { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.cad thead th:first-child, .cad tbody th { color: var(--texto-2); font-size: .76rem; font-weight: 600; }
+.cad td { font-size: .98rem; font-weight: 600; }
+.cad .t-ganhou { background: var(--ouro-claro); }
+.cad .t-saiu { color: var(--perdeu); font-size: .78rem; }
+.cad .t-inicio { color: var(--texto-2); font-weight: 500; }
+.cad sup { margin-left: 1px; font-size: .62rem; font-weight: 700; color: var(--perdeu); }
+.cad-vazio { padding-block: 12px; color: var(--texto-2); }
+.cad-legenda { font-size: .84rem; color: var(--texto-2); }
+.leg-ouro { padding-inline: .3em; border-radius: 4px; background: var(--ouro-claro); color: var(--texto); box-shadow: inset 0 0 0 1px var(--ouro); }
+
+/* ---------- Aviso rápido ---------- */
+.toast {
+  position: fixed;
+  z-index: 20;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + var(--altura-barra, 0px) + 10px);
+  width: min(500px, calc(100% - 24px));
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 14px;
+  background: var(--fundo-aviso);
+  color: var(--texto-aviso);
+  box-shadow: 0 10px 30px var(--sombra);
+  font-size: .95rem;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate(-50%, 12px);
+  transition: opacity .2s, transform .2s, visibility 0s .2s;
+}
+.toast.is-visivel { opacity: 1; visibility: visible; pointer-events: auto; transform: translate(-50%, 0); transition: opacity .2s, transform .2s; }
+.toast-texto { flex: 1; min-width: 0; padding-block: 8px; }
+.toast-acao {
+  flex: none;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--texto-aviso);
+  color: var(--fundo-aviso);
+  font-weight: 700;
+}
+
+/* ---------- Movimento ---------- */
+@keyframes risca { from { transform: rotate(-14deg) scaleX(0); } to { transform: rotate(-14deg) scaleX(1); } }
+@keyframes escreve { from { clip-path: inset(-30% 100% -30% -30%); } to { clip-path: inset(-30% -40% -30% -30%); } }
+@keyframes flutua { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-24px); } }
+@keyframes circula { to { stroke-dashoffset: 0; } }
+@keyframes entra { from { opacity: 0; transform: scale(.97); } }
+@keyframes sobe { from { opacity: 0; transform: translateY(40px); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: .01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+<div id="app" class="app"></div>
+
+<dialog id="dlg-menu" class="dlg dlg-baixo" aria-labelledby="menu-titulo"><div class="dlg-corpo"></div></dialog>
+<dialog id="dlg-caderninho" class="dlg dlg-cheio" aria-labelledby="cad-titulo"><div class="dlg-corpo"></div></dialog>
+<dialog id="dlg-info" class="dlg dlg-caixa" aria-labelledby="info-titulo"><div class="dlg-corpo"></div></dialog>
+<dialog id="dlg-nomes" class="dlg dlg-caixa" aria-labelledby="nomes-titulo"><div class="dlg-corpo"></div></dialog>
+<dialog id="dlg-confirma" class="dlg dlg-caixa" aria-labelledby="conf-titulo"><div class="dlg-corpo"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+
+// #region motor
+// Regras e contas da cacheta, sem nada de tela. Os testes em testes/regras.test.mjs leem este trecho.
+const Motor = (() => {
+  const REGRAS_PADRAO = Object.freeze({ inicio: 10, correr: 1, perder: 2 });
+  const LIMITES = Object.freeze({ inicio: [1, 30], correr: [1, 5], perder: [1, 10] });
+
+  function regrasValidas(r) {
+    const saida = {};
+    for (const chave of Object.keys(REGRAS_PADRAO)) {
+      const [min, max] = LIMITES[chave];
+      const v = Math.round(Number(r && r[chave]));
+      saida[chave] = Number.isFinite(v) ? Math.min(max, Math.max(min, v)) : REGRAS_PADRAO[chave];
+    }
+    return saida;
+  }
+
+  function criarPartida({ id, inicio, jogadores, regras }) {
+    if (!Array.isArray(jogadores) || jogadores.length < 2) throw new Error('poucos-jogadores');
+    return {
+      id: String(id),
+      inicio: String(inicio || ''),
+      regras: regrasValidas(regras),
+      jogadores: jogadores.map(j => ({ id: String(j.id), nome: String(j.nome) })),
+      rodadas: [],
+    };
+  }
+
+  // Pontos de cada um, quem está na mesa e em que rodada cada um saiu.
+  function situacao(p) {
+    const pontos = {};
+    const saiuNa = {};
+    for (const j of p.jogadores) pontos[j.id] = p.regras.inicio;
+    p.rodadas.forEach((r, i) => {
+      for (const id of r.correram) pontos[id] -= p.regras.correr;
+      for (const id of r.jogaram) if (id !== r.vencedor) pontos[id] -= p.regras.perder;
+      for (const id of r.correram.concat(r.jogaram)) {
+        if (pontos[id] <= 0 && !(id in saiuNa)) saiuNa[id] = i + 1;
+      }
+    });
+    const ativos = p.jogadores.map(j => j.id).filter(id => pontos[id] > 0);
+    const acabou = p.rodadas.length > 0 && ativos.length <= 1;
+    return { pontos, saiuNa, ativos, acabou, campeao: acabou && ativos.length === 1 ? ativos[0] : null };
+  }
+
+  // Correr só é permitido se a pessoa continuar com pelo menos 1 ponto depois.
+  function podeCorrer(pontos, regras) {
+    return pontos - regras.correr > 0;
+  }
+
+  // marcas: { [id]: 'correu' | 'perdeu' | 'ganhou' }. Quem não correu jogou.
+  function avaliar(p, marcas, sit) {
+    sit = sit || situacao(p);
+    marcas = marcas || {};
+    const correram = [];
+    const jogaram = [];
+    let vencedor = null;
+    for (const id of sit.ativos) {
+      if (marcas[id] === 'correu' && podeCorrer(sit.pontos[id], p.regras)) {
+        correram.push(id);
+      } else {
+        jogaram.push(id);
+        if (marcas[id] === 'ganhou' && vencedor === null) vencedor = id;
+      }
+    }
+    let automatico = false;
+    if (vencedor === null && jogaram.length === 1) {
+      vencedor = jogaram[0];
+      automatico = true;
+    }
+    const problema = jogaram.length === 0 ? 'ninguem-jogou' : vencedor === null ? 'falta-vencedor' : null;
+    const depois = {};
+    for (const id of sit.ativos) {
+      if (correram.includes(id)) depois[id] = sit.pontos[id] - p.regras.correr;
+      else if (vencedor === null) depois[id] = null;
+      else depois[id] = id === vencedor ? sit.pontos[id] : sit.pontos[id] - p.regras.perder;
+    }
+    const saem = sit.ativos.filter(id => depois[id] !== null && depois[id] <= 0);
+    const ficam = problema ? null : sit.ativos.filter(id => depois[id] > 0);
+    return {
+      correram, jogaram, vencedor, automatico, problema,
+      ok: problema === null,
+      depois, saem, ficam,
+      encerra: !!ficam && ficam.length === 1,
+    };
+  }
+
+  function anotar(p, marcas, em) {
+    const sit = situacao(p);
+    if (sit.acabou) throw new Error('partida-encerrada');
+    const a = avaliar(p, marcas, sit);
+    if (!a.ok) throw new Error(a.problema);
+    const rodada = { em: String(em || ''), correram: a.correram, jogaram: a.jogaram, vencedor: a.vencedor };
+    return Object.assign({}, p, { rodadas: p.rodadas.concat([rodada]) });
+  }
+
+  function desfazer(p) {
+    return p.rodadas.length ? Object.assign({}, p, { rodadas: p.rodadas.slice(0, -1) }) : p;
+  }
+
+  // Marcas de uma rodada já anotada, para corrigir depois de desfazer.
+  function marcasDaRodada(r) {
+    const m = {};
+    for (const id of r.correram) m[id] = 'correu';
+    if (r.vencedor && r.jogaram.length > 1) m[r.vencedor] = 'ganhou';
+    return m;
+  }
+
+  // Quem está na mesa vem antes; entre quem saiu, quem saiu por último fica na frente.
+  // Quem saiu na mesma rodada empata.
+  function classificacao(p, sit) {
+    sit = sit || situacao(p);
+    const lista = p.jogadores.map((j, ordem) => {
+      const saiu = sit.saiuNa[j.id] || null;
+      return {
+        id: j.id,
+        nome: j.nome,
+        pontos: Math.max(0, sit.pontos[j.id]),
+        saiuNa: saiu,
+        ordem,
+        chave: saiu ? [1, -saiu] : [0, -sit.pontos[j.id]],
+      };
+    });
+    const compara = (a, b) => (a.chave[0] - b.chave[0]) || (a.chave[1] - b.chave[1]);
+    lista.sort((a, b) => compara(a, b) || a.ordem - b.ordem);
+    for (const item of lista) item.posicao = 1 + lista.filter(o => compara(o, item) < 0).length;
+    return lista.map(({ id, nome, pontos, saiuNa, posicao }) => ({ id, nome, pontos, saiuNa, posicao }));
+  }
+
+  // Uma linha por rodada com os pontos de cada um depois dela, como no caderninho.
+  function linhaDoTempo(p) {
+    const pontos = {};
+    for (const j of p.jogadores) pontos[j.id] = p.regras.inicio;
+    return p.rodadas.map((r, i) => {
+      const celulas = {};
+      for (const j of p.jogadores) {
+        const id = j.id;
+        let c;
+        if (r.correram.includes(id)) {
+          pontos[id] -= p.regras.correr;
+          c = { tipo: 'correu', pontos: pontos[id], perdeu: p.regras.correr };
+        } else if (r.jogaram.includes(id)) {
+          const ganhou = id === r.vencedor;
+          if (!ganhou) pontos[id] -= p.regras.perder;
+          c = { tipo: ganhou ? 'ganhou' : 'perdeu', pontos: pontos[id], perdeu: ganhou ? 0 : p.regras.perder };
+        } else {
+          c = { tipo: 'fora', pontos: pontos[id], perdeu: 0 };
+        }
+        c.saiu = c.tipo !== 'fora' && pontos[id] <= 0;
+        celulas[id] = c;
+      }
+      return { numero: i + 1, em: r.em, vencedor: r.vencedor, celulas };
+    });
+  }
+
+  // Confere uma partida lida do armazenamento. Rodadas que não fazem sentido são descartadas.
+  function partidaValida(b) {
+    if (!b || typeof b !== 'object' || !Array.isArray(b.jogadores)) return null;
+    const vistos = new Set();
+    const jogadores = [];
+    for (const j of b.jogadores) {
+      if (!j || typeof j.id !== 'string' || !j.id || typeof j.nome !== 'string' || vistos.has(j.id)) return null;
+      vistos.add(j.id);
+      jogadores.push({ id: j.id, nome: j.nome.slice(0, 40) });
+    }
+    if (jogadores.length < 2) return null;
+    let p = {
+      id: typeof b.id === 'string' && b.id ? b.id : 'partida',
+      inicio: typeof b.inicio === 'string' ? b.inicio : '',
+      regras: regrasValidas(b.regras),
+      jogadores,
+      rodadas: [],
+    };
+    for (const r of Array.isArray(b.rodadas) ? b.rodadas : []) {
+      const sit = situacao(p);
+      if (sit.acabou || !r || typeof r !== 'object' || !Array.isArray(r.correram) || !Array.isArray(r.jogaram)) break;
+      const todos = r.correram.concat(r.jogaram);
+      const coerente = todos.length === sit.ativos.length
+        && new Set(todos).size === todos.length
+        && todos.every(id => sit.ativos.includes(id))
+        && r.jogaram.includes(r.vencedor)
+        && r.correram.every(id => podeCorrer(sit.pontos[id], p.regras));
+      if (!coerente) break;
+      const rodada = {
+        em: typeof r.em === 'string' ? r.em : '',
+        correram: r.correram.slice(),
+        jogaram: r.jogaram.slice(),
+        vencedor: r.vencedor,
+      };
+      p = Object.assign({}, p, { rodadas: p.rodadas.concat([rodada]) });
+    }
+    return p;
+  }
+
+  return {
+    REGRAS_PADRAO, LIMITES, regrasValidas, criarPartida, situacao, podeCorrer, avaliar,
+    anotar, desfazer, marcasDaRodada, classificacao, linhaDoTempo, partidaValida,
+  };
+})();
+// #endregion motor
+
+// ------------------------------------------------------------------
+// Utilidades
+// ------------------------------------------------------------------
+const MAX_JOGADORES = 12;
+const MAX_NOME = 20;
+const CHAVE = 'cacheta.placar.v1';
+const MARCAS = ['correu', 'perdeu', 'ganhou'];
+
+const $ = sel => document.querySelector(sel);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const plural = (n, um, varios) => `${n} ${Math.abs(n) === 1 ? um : varios}`;
+const novoId = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
+const limparNome = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, MAX_NOME);
+const chaveNome = s => limparNome(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLocaleLowerCase('pt-BR');
+// "vó lurdes" vira "Vó Lurdes"; "maria da silva" vira "Maria da Silva".
+const PARTICULAS = ['da', 'das', 'de', 'do', 'dos', 'e'];
+const comMaiuscula = s => (s || '').split(' ').map((p, i) => (
+  i > 0 && PARTICULAS.includes(p.toLocaleLowerCase('pt-BR')) ? p : p.charAt(0).toLocaleUpperCase('pt-BR') + p.slice(1)
+)).join(' ');
+const juntar = lista => (lista.length < 2 ? lista.join('') : `${lista.slice(0, -1).join(', ')} e ${lista[lista.length - 1]}`);
+const cssId = id => (window.CSS && CSS.escape ? CSS.escape(id) : id);
+const agora = () => new Date().toISOString();
+const vibrar = padrao => { try { if (navigator.vibrate) navigator.vibrate(padrao); } catch (e) { /* aparelho sem vibração */ } };
+const textoNaoCorre = r => (r.correr === 1 ? 'Com 1 ponto não dá para correr.' : `Com ${r.correr} pontos ou menos não dá para correr.`);
+const resumoRegras = r => `${plural(r.inicio, 'ponto', 'pontos')}, correr −${r.correr}, perder −${r.perder}`;
+
+const ICONE_MAIS = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>';
+const ICONE_X = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>';
+const CIRCULO = '<svg class="circulo" viewBox="0 0 200 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path pathLength="1" d="M30 64 C 18 30, 72 8, 122 10 C 174 12, 198 38, 190 62 C 181 87, 118 96, 70 90 C 30 85, 8 66, 22 42 C 31 27, 54 17, 80 13"/></svg>';
+
+// Onde o app está rodando
+const emFrame = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
+const instalado = (() => { try { return matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { return false; } })();
+const ehIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const ehAndroid = /Android/i.test(navigator.userAgent);
+let pedidoInstalacao = null;
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); pedidoInstalacao = e; });
+window.addEventListener('appinstalled', () => { pedidoInstalacao = null; });
+const podeInstalar = () => !emFrame && !instalado && location.protocol !== 'file:' && (pedidoInstalacao !== null || ehIOS || ehAndroid);
+
+// ------------------------------------------------------------------
+// Estado guardado no aparelho
+// ------------------------------------------------------------------
+function estadoNovo() {
+  return {
+    versao: 1,
+    partida: null,
+    marcas: {},
+    preparo: { nomes: [], regras: Object.assign({}, Motor.REGRAS_PADRAO) },
+    recentes: [],
+    arquivo: [],
+    prefs: { tema: 'auto', telaAcesa: true },
+  };
+}
+
+function lerArmazenado() {
+  try { return localStorage.getItem(CHAVE); } catch (e) { return null; }
+}
+
+function semRepetidos(lista) {
+  const saida = [];
+  for (const bruto of lista) {
+    const n = limparNome(bruto);
+    if (n && !saida.some(x => chaveNome(x) === chaveNome(n))) saida.push(n);
+  }
+  return saida;
+}
+
+function carregar(bruto) {
+  const e = estadoNovo();
+  if (!bruto) return e;
+  let d;
+  try {
+    d = JSON.parse(bruto);
+  } catch (erro) {
+    try { localStorage.setItem(`${CHAVE}.copia-com-defeito`, bruto); } catch (x) { /* sem espaço */ }
+    return e;
+  }
+  if (!d || typeof d !== 'object') return e;
+
+  e.partida = d.partida ? Motor.partidaValida(d.partida) : null;
+  if (e.partida && d.marcas && typeof d.marcas === 'object') {
+    let temVencedor = false;
+    for (const id of Motor.situacao(e.partida).ativos) {
+      const m = d.marcas[id];
+      if (m === 'correu' || m === 'perdeu') e.marcas[id] = m;
+      else if (m === 'ganhou' && !temVencedor) { e.marcas[id] = m; temVencedor = true; }
+    }
+  }
+  const prep = d.preparo && typeof d.preparo === 'object' ? d.preparo : {};
+  e.preparo.nomes = semRepetidos(Array.isArray(prep.nomes) ? prep.nomes : []).slice(0, MAX_JOGADORES);
+  e.preparo.regras = Motor.regrasValidas(prep.regras);
+  e.recentes = semRepetidos(Array.isArray(d.recentes) ? d.recentes : []).slice(0, 30);
+  e.arquivo = (Array.isArray(d.arquivo) ? d.arquivo : []).filter(a => a && typeof a.vencedor === 'string' && a.vencedor).slice(-500);
+  const prefs = d.prefs && typeof d.prefs === 'object' ? d.prefs : {};
+  e.prefs.tema = ['auto', 'claro', 'escuro'].includes(prefs.tema) ? prefs.tema : 'auto';
+  e.prefs.telaAcesa = prefs.telaAcesa !== false;
+  return e;
+}
+
+let estado = carregar(lerArmazenado());
+let avisouFalha = false;
+
+function salvar() {
+  try {
+    localStorage.setItem(CHAVE, JSON.stringify(estado));
+  } catch (e) {
+    if (!avisouFalha) {
+      avisouFalha = true;
+      mostrarToast('Este navegador não está guardando os pontos. Deixe esta página aberta até o fim da partida.', { duracao: 9000 });
+    }
+  }
+}
+
+function lembrarNomes(nomes) {
+  estado.recentes = semRepetidos(nomes.concat(estado.recentes)).slice(0, 30);
+}
+
+function pedirArmazenamentoDuradouro() {
+  try {
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) { /* o navegador decide sozinho */ }
+}
+
+// ------------------------------------------------------------------
+// Telas
+// ------------------------------------------------------------------
+const app = document.getElementById('app');
+let animacao = null; // perdas da rodada que acabou de ser anotada, para animar
+
+const nomeDe = (p, id) => { const j = p.jogadores.find(x => x.id === id); return j ? j.nome : '?'; };
+
+function telaAtual() {
+  if (!estado.partida) return 'preparo';
+  return Motor.situacao(estado.partida).acabou ? 'fim' : 'jogo';
+}
+
+function render() {
+  const tela = telaAtual();
+  app.dataset.tela = tela;
+  if (tela === 'preparo') renderPreparo();
+  else if (tela === 'jogo') renderJogo();
+  else renderFim();
+  observarMedidas();
+  atualizarTelaAcesa();
+}
+
+function faixa(titulo, subtitulo, extra) {
+  return `<header class="faixa"><div class="faixa-dentro">
+      <div class="faixa-texto">${titulo}${subtitulo ? `<p class="faixa-sub">${subtitulo}</p>` : ''}</div>
+      <div class="faixa-acoes">${extra || ''}<button type="button" class="btn-faixa-icone" data-acao="menu" aria-label="Mais opções" aria-haspopup="dialog">${ICONE_MAIS}</button></div>
+    </div></header>`;
+}
+
+// Mede a barra de baixo (para o aviso rápido ficar acima dela) e ajusta a altura das linhas
+// da partida para todo mundo caber na tela sem rolar.
+let quadroMedida = 0;
+function medir() {
+  cancelAnimationFrame(quadroMedida);
+  quadroMedida = requestAnimationFrame(() => {
+    const barra = app.querySelector('.barra');
+    document.body.style.setProperty('--altura-barra', `${barra ? Math.round(barra.getBoundingClientRect().height) : 0}px`);
+    ajustarMesa();
+  });
+}
+
+function ajustarMesa() {
+  const principal = $('#principal');
+  const mesa = app.querySelector('.mesa');
+  if (!principal || !mesa || !mesa.children.length) return;
+  mesa.classList.remove('compacta');
+  mesa.style.removeProperty('--linha-altura');
+  const outros = principal.firstElementChild.offsetHeight - mesa.offsetHeight;
+  const porLinha = Math.floor((principal.clientHeight - outros) / mesa.children.length);
+  if (porLinha < 64) mesa.classList.add('compacta');
+  mesa.style.setProperty('--linha-altura', `${Math.max(52, Math.min(84, porLinha))}px`);
+  // nomes compridos em duas linhas podem não caber: aí também vale o modo compacto
+  if (principal.scrollHeight > principal.clientHeight + 1) mesa.classList.add('compacta');
+}
+const observador = 'ResizeObserver' in window ? new ResizeObserver(medir) : null;
+function observarMedidas() {
+  if (observador) {
+    observador.disconnect();
+    const barra = app.querySelector('.barra');
+    const principal = $('#principal');
+    if (barra) observador.observe(barra);
+    if (principal) observador.observe(principal);
+  }
+  ajustarMesa();
+  medir();
+}
+window.addEventListener('resize', medir);
+
+function itensDasRegras(r) {
+  return [
+    `Todo mundo começa com ${plural(r.inicio, 'ponto', 'pontos')}.`,
+    'Depois de olhar as cartas, cada um decide se corre ou joga.',
+    `Quem corre perde ${plural(r.correr, 'ponto', 'pontos')}. Quem joga e não ganha perde ${plural(r.perder, 'ponto', 'pontos')}. Quem ganha a rodada não perde nada.`,
+    `${textoNaoCorre(r)} A pessoa joga e tenta a sorte.`,
+    'Quem fica sem pontos sai do jogo. Vence quem sobrar com pontos.',
+  ];
+}
+
+// ----- Preparação -----
+function renderPreparo() {
+  app.innerHTML = `
+    ${faixa('<h1 class="marca">Cacheta</h1>', 'Placar da família')}
+    <main class="principal" id="principal"><div class="coluna">
+      <form id="form-nome" class="form-nome" autocomplete="off" novalidate>
+        <label for="campo-nome" class="rotulo">Quem vai jogar?</label>
+        <div class="campo-linha">
+          <input id="campo-nome" class="campo" name="nome" type="text" maxlength="${MAX_NOME}" placeholder="Digite um nome" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="next">
+          <button type="submit" class="btn btn-adicionar">Adicionar</button>
+        </div>
+        <p id="erro-nome" class="erro" role="alert"></p>
+      </form>
+      <div id="recentes"></div>
+      <ul id="lista-nomes" class="lista-nomes" aria-label="Quem vai jogar"></ul>
+      <div class="linhas-extra" id="linhas-extra"></div>
+    </div></main>
+    <div class="barra"><div class="barra-dentro">
+      <button type="button" id="btn-comecar" class="btn btn-principal" data-acao="comecar"></button>
+    </div></div>`;
+  atualizarPreparo();
+}
+
+function atualizarPreparo() {
+  const { nomes, regras } = estado.preparo;
+  const usados = new Set(nomes.map(chaveNome));
+
+  const sugestoes = estado.recentes.filter(n => !usados.has(chaveNome(n))).slice(0, 12);
+  $('#recentes').innerHTML = sugestoes.length && nomes.length < MAX_JOGADORES
+    ? `<div class="recentes">
+        <p class="rotulo-pequeno">Já jogaram antes. Toque para adicionar:</p>
+        <div class="chips">${sugestoes.map(n => `<button type="button" class="chip" data-acao="add-recente" data-nome="${esc(n)}"><span class="chip-mais" aria-hidden="true">+</span>${esc(n)}</button>`).join('')}</div>
+      </div>`
+    : '';
+
+  $('#lista-nomes').innerHTML = nomes.length
+    ? nomes.map((n, i) => `
+      <li class="nome-linha">
+        <span class="nome-linha-texto">${esc(n)}</span>
+        <button type="button" class="btn-icone" data-acao="remover" data-indice="${i}" aria-label="Tirar ${esc(n)} da lista">${ICONE_X}</button>
+      </li>`).join('')
+    : '<li class="vazio">Ninguém na lista ainda. Dá para jogar de 2 a 12 pessoas.</li>';
+
+  const vitorias = estado.arquivo.length;
+  $('#linhas-extra').innerHTML = `
+    <button type="button" class="linha-extra" data-acao="regras">Regras da casa<span>${resumoRegras(regras)}</span></button>
+    <button type="button" class="linha-extra" data-acao="como-funciona">Como funciona</button>
+    ${vitorias ? `<button type="button" class="linha-extra" data-acao="placar">Quem mais ganhou<span>${plural(vitorias, 'partida', 'partidas')}</span></button>` : ''}`;
+
+  const b = $('#btn-comecar');
+  b.disabled = nomes.length < 2;
+  b.textContent = nomes.length >= 2
+    ? `Começar partida com ${nomes.length} pessoas`
+    : nomes.length === 1 ? 'Adicione mais uma pessoa' : 'Adicione pelo menos 2 pessoas';
+}
+
+function adicionarNome(bruto) {
+  const nome = comMaiuscula(limparNome(bruto));
+  const erro = $('#erro-nome');
+  if (!nome) {
+    erro.textContent = '';
+    return false;
+  }
+  if (estado.preparo.nomes.length >= MAX_JOGADORES) {
+    erro.textContent = `Dá para jogar com até ${MAX_JOGADORES} pessoas.`;
+    return false;
+  }
+  if (estado.preparo.nomes.some(n => chaveNome(n) === chaveNome(nome))) {
+    erro.textContent = `${nome} já está na lista. Use um apelido para diferenciar.`;
+    return false;
+  }
+  erro.textContent = '';
+  estado.preparo.nomes.push(nome);
+  salvar();
+  atualizarPreparo();
+  return true;
+}
+
+function comecar() {
+  const nomes = estado.preparo.nomes.slice();
+  if (nomes.length < 2) return;
+  estado.partida = Motor.criarPartida({
+    id: novoId(),
+    inicio: agora(),
+    jogadores: nomes.map(nome => ({ id: novoId(), nome })),
+    regras: estado.preparo.regras,
+  });
+  estado.marcas = {};
+  lembrarNomes(nomes);
+  salvar();
+  pedirArmazenamentoDuradouro();
+  esconderToast();
+  render();
+}
+
+// ----- Partida -----
+function renderJogo() {
+  const p = estado.partida;
+  const sit = Motor.situacao(p);
+  const n = p.rodadas.length + 1;
+  const fora = p.jogadores
+    .filter(j => !sit.ativos.includes(j.id))
+    .sort((a, b) => sit.saiuNa[b.id] - sit.saiuNa[a.id]);
+  app.innerHTML = `
+    ${faixa(`<h1 class="rodada">Rodada ${n}</h1>`, `${sit.ativos.length} na mesa${fora.length ? `, ${fora.length} fora` : ''}`,
+      '<button type="button" class="btn-faixa" data-acao="caderninho">Caderninho</button>')}
+    <main class="principal" id="principal"><div class="coluna">
+      <ul class="mesa" aria-label="Quem está na mesa">${sit.ativos.map(id => linhaJogador(p, sit, id)).join('')}</ul>
+      ${fora.length ? `<p class="fora">Fora do jogo: ${fora.map(j => `<s>${esc(j.nome)}</s> (rodada ${sit.saiuNa[j.id]})`).join(', ')}</p>` : ''}
+    </div></main>
+    <div class="barra"><div class="barra-dentro">
+      <p id="resumo" class="resumo" aria-live="polite"></p>
+      <div class="acoes">
+        <button type="button" class="btn btn-secundario" data-acao="desfazer-confirmando"${p.rodadas.length ? '' : ' disabled'}>Desfazer</button>
+        <button type="button" id="btn-anotar" class="btn btn-principal" data-acao="anotar">Anotar rodada ${n}</button>
+      </div>
+    </div></div>`;
+  atualizarRodada();
+}
+
+function linhaJogador(p, sit, id) {
+  const pts = sit.pontos[id];
+  const corre = Motor.podeCorrer(pts, p.regras);
+  let marca = estado.marcas[id] || '';
+  if (marca === 'correu' && !corre) marca = '';
+  const nome = esc(nomeDe(p, id));
+  const perdeuAgora = animacao && animacao.perdas[id] > 0 ? animacao.perdas[id] : 0;
+  const opcao = (valor, texto, extra) => `<label class="opcao opcao-${valor}"><input type="radio" id="m-${id}-${valor}" name="m-${id}" value="${valor}"${marca === valor ? ' checked' : ''}${extra || ''}><span>${texto}</span></label>`;
+  return `<li class="jogador" data-id="${id}">
+      <div class="quem">
+        <h2 class="nome">${nome}</h2>
+        <p class="placar"><span class="num" aria-hidden="true">${pts}</span><span class="novo" aria-hidden="true"></span>${corre ? '' : '<span class="aviso" aria-hidden="true">não pode correr</span>'}${perdeuAgora ? `<span class="perda-flutua" aria-hidden="true">−${perdeuAgora}</span>` : ''}<span class="sr" data-leitura></span></p>
+      </div>
+      <fieldset class="escolha">
+        <legend class="sr">${nome} nesta rodada</legend>
+        ${opcao('correu', 'Correu', corre ? '' : ' disabled')}${opcao('perdeu', 'Perdeu')}${opcao('ganhou', 'Ganhou')}
+      </fieldset>
+    </li>`;
+}
+
+function atualizarRodada() {
+  const p = estado.partida;
+  if (!p) return;
+  const sit = Motor.situacao(p);
+  const a = Motor.avaliar(p, estado.marcas, sit);
+  for (const id of sit.ativos) {
+    const li = app.querySelector(`.jogador[data-id="${cssId(id)}"]`);
+    if (!li) continue;
+    const pts = sit.pontos[id];
+    const depois = a.depois[id];
+    const perde = depois === null ? 0 : pts - depois;
+    const sai = depois !== null && depois <= 0;
+    const marca = estado.marcas[id];
+    const correu = a.correram.includes(id);
+    const ganhou = a.vencedor === id;
+    li.classList.toggle('is-correu', correu);
+    li.classList.toggle('is-ganhou', ganhou);
+    li.classList.toggle('is-ganhou-auto', ganhou && marca !== 'ganhou');
+    li.classList.toggle('is-perdeu-auto', !correu && !ganhou && a.vencedor !== null && marca !== 'perdeu');
+    li.classList.toggle('is-perde', perde > 0);
+    li.querySelector('.novo').textContent = perde > 0 ? (sai ? 'fora' : String(depois)) : '';
+    let leitura = plural(pts, 'ponto', 'pontos');
+    if (!Motor.podeCorrer(pts, p.regras)) leitura += ', não pode correr';
+    if (perde > 0) leitura += sai ? ', vai sair do jogo' : `, vai ficar com ${depois}`;
+    else if (ganhou) leitura += ', ganha a rodada';
+    li.querySelector('[data-leitura]').textContent = leitura;
+  }
+  const r = textoResumo(p, a);
+  const resumo = $('#resumo');
+  resumo.innerHTML = `<span>${r.html}</span>`;
+  resumo.dataset.tipo = r.tipo;
+  $('#btn-anotar').disabled = !a.ok;
+}
+
+function textoResumo(p, a) {
+  const forte = id => `<b>${esc(nomeDe(p, id))}</b>`;
+  if (a.problema === 'ninguem-jogou') {
+    return { tipo: 'alerta', html: 'Todo mundo está em Correu. Alguém precisa ter jogado a rodada.' };
+  }
+  if (a.problema === 'falta-vencedor') {
+    if (a.correram.length) {
+      return { tipo: 'dica', html: `${juntar(a.correram.map(forte))} ${a.correram.length === 1 ? 'correu' : 'correram'}. Falta tocar em Ganhou em quem bateu.` };
+    }
+    return { tipo: 'dica', html: 'Toque em Correu em quem correu e em Ganhou em quem bateu. Os outros perdem.' };
+  }
+  const partes = [a.automatico
+    ? `Todos os outros correram, então ${forte(a.vencedor)} ganha a rodada.`
+    : `${forte(a.vencedor)} ganha a rodada.`];
+  if (a.saem.length) {
+    partes.push(`<span class="txt-perdeu">${esc(juntar(a.saem.map(id => nomeDe(p, id))))} ${a.saem.length === 1 ? 'sai' : 'saem'} do jogo.</span>`);
+  }
+  if (a.encerra) partes.push(`${forte(a.ficam[0])} vence a partida!`);
+  return { tipo: 'ok', html: partes.join(' ') };
+}
+
+function marcar(id, valor) {
+  if (!estado.partida || !MARCAS.includes(valor)) return;
+  if (valor === 'ganhou') {
+    for (const outro of Object.keys(estado.marcas)) {
+      if (outro !== id && estado.marcas[outro] === 'ganhou') {
+        delete estado.marcas[outro];
+        const r = app.querySelector(`input[name="m-${cssId(outro)}"][value="ganhou"]`);
+        if (r) r.checked = false;
+      }
+    }
+  }
+  estado.marcas[id] = valor;
+  salvar();
+  atualizarRodada();
+  vibrar(8);
+}
+
+function anotar() {
+  const p = estado.partida;
+  if (!p) return;
+  const sit = Motor.situacao(p);
+  const a = Motor.avaliar(p, estado.marcas, sit);
+  if (!a.ok) return;
+  estado.partida = Motor.anotar(p, estado.marcas, agora());
+  estado.marcas = {};
+  salvar();
+  const n = estado.partida.rodadas.length;
+  const perdas = {};
+  for (const id of sit.ativos) perdas[id] = a.depois[id] === null ? 0 : sit.pontos[id] - a.depois[id];
+  animacao = { perdas };
+  vibrar(a.encerra ? [30, 60, 40] : 18);
+  render();
+  animacao = null;
+  const saiu = a.saem.length ? ` ${juntar(a.saem.map(id => nomeDe(p, id)))} ${a.saem.length === 1 ? 'saiu' : 'saíram'} do jogo.` : '';
+  const alvo = { id: estado.partida.id, n };
+  mostrarToast(`Rodada ${n} anotada.${saiu}`, { acao: 'Desfazer', aoAgir: () => desfazer(alvo) });
+}
+
+function desfazer(esperado) {
+  const p = estado.partida;
+  if (!p || !p.rodadas.length) return;
+  if (esperado && (esperado.id !== p.id || esperado.n !== p.rodadas.length)) {
+    mostrarToast('Essa rodada não pode mais ser desfeita por aqui.');
+    return;
+  }
+  const n = p.rodadas.length;
+  const ultima = p.rodadas[n - 1];
+  estado.partida = Motor.desfazer(p);
+  estado.marcas = Motor.marcasDaRodada(ultima);
+  salvar();
+  render();
+  mostrarToast(`Rodada ${n} desfeita. Corrija as marcações e anote de novo.`);
+}
+
+async function desfazerConfirmando() {
+  const p = estado.partida;
+  if (!p || !p.rodadas.length) return;
+  const n = p.rodadas.length;
+  const ok = await confirmar({
+    titulo: `Desfazer a rodada ${n}?`,
+    texto: 'Os pontos voltam a ser como estavam antes dela, e as marcações dela voltam para você corrigir.',
+    sim: 'Desfazer',
+  });
+  if (ok) desfazer();
+}
+
+async function encerrar() {
+  const ok = await confirmar({
+    titulo: 'Encerrar esta partida?',
+    texto: 'Os pontos desta partida serão apagados e ninguém fica com a vitória. Os nomes continuam na lista para a próxima.',
+    sim: 'Encerrar',
+    nao: 'Continuar jogando',
+    perigo: true,
+  });
+  if (!ok) return;
+  const p = estado.partida;
+  estado.preparo.nomes = p.jogadores.map(j => j.nome);
+  estado.preparo.regras = Object.assign({}, p.regras);
+  estado.partida = null;
+  estado.marcas = {};
+  salvar();
+  render();
+  mostrarToast('Partida encerrada.');
+}
+
+// ----- Fim de jogo -----
+function renderFim() {
+  const p = estado.partida;
+  const sit = Motor.situacao(p);
+  const lista = Motor.classificacao(p, sit);
+  const campeao = lista[0];
+  const n = p.rodadas.length;
+  app.innerHTML = `
+    ${faixa('<h1 class="rodada">Fim de jogo</h1>', `Acabou na rodada ${n}`,
+      '<button type="button" class="btn-faixa" data-acao="caderninho">Caderninho</button>')}
+    <main class="principal" id="principal"><div class="coluna fim">
+      <h2 class="campeao">
+        <span class="campeao-nome"><span class="campeao-texto">${esc(campeao.nome)}</span>${CIRCULO}</span>
+        <span class="campeao-frase">venceu a cacheta!</span>
+        <span class="fim-detalhe">Terminou com ${plural(campeao.pontos, 'ponto', 'pontos')}.</span>
+      </h2>
+      <ol class="classificacao" aria-label="Classificação">
+        ${lista.map(c => `<li${c.posicao === 1 ? ' class="is-primeiro"' : ''}>
+          <span class="pos">${c.posicao}º</span>
+          <span class="classificacao-nome">${esc(c.nome)}</span>
+          <span class="como">${c.saiuNa ? `saiu na rodada ${c.saiuNa}` : `ficou com ${plural(c.pontos, 'ponto', 'pontos')}`}</span>
+        </li>`).join('')}
+      </ol>
+      <div class="fim-links">
+        <button type="button" class="btn-link" data-acao="mudar-jogadores">Mudar quem joga</button>
+        <button type="button" class="btn-link" data-acao="desfazer">Desfazer a última rodada</button>
+      </div>
+    </div></main>
+    <div class="barra"><div class="barra-dentro">
+      <div class="acoes">
+        <button type="button" class="btn btn-secundario" data-acao="compartilhar">Compartilhar</button>
+        <button type="button" class="btn btn-principal" data-acao="de-novo">Jogar de novo</button>
+      </div>
+    </div></div>`;
+}
+
+function arquivar(p) {
+  const sit = Motor.situacao(p);
+  if (!sit.acabou || !sit.campeao) return;
+  if (estado.arquivo.some(a => a.id === p.id)) return;
+  const ultima = p.rodadas[p.rodadas.length - 1];
+  estado.arquivo.push({
+    id: p.id,
+    inicio: p.inicio,
+    fim: (ultima && ultima.em) || agora(),
+    rodadas: p.rodadas.length,
+    jogadores: p.jogadores.map(j => j.nome),
+    vencedor: nomeDe(p, sit.campeao),
+  });
+  if (estado.arquivo.length > 500) estado.arquivo = estado.arquivo.slice(-500);
+}
+
+function jogarDeNovo() {
+  const p = estado.partida;
+  if (!p) return;
+  arquivar(p);
+  const nomes = p.jogadores.map(j => j.nome);
+  estado.partida = Motor.criarPartida({
+    id: novoId(),
+    inicio: agora(),
+    jogadores: nomes.map(nome => ({ id: novoId(), nome })),
+    regras: p.regras,
+  });
+  estado.marcas = {};
+  lembrarNomes(nomes);
+  salvar();
+  esconderToast();
+  render();
+}
+
+function mudarJogadores() {
+  const p = estado.partida;
+  if (!p) return;
+  arquivar(p);
+  estado.preparo.nomes = p.jogadores.map(j => j.nome);
+  estado.preparo.regras = Object.assign({}, p.regras);
+  estado.partida = null;
+  estado.marcas = {};
+  salvar();
+  esconderToast();
+  render();
+}
+
+function textoResultado() {
+  const p = estado.partida;
+  const lista = Motor.classificacao(p);
+  const ultima = p.rodadas[p.rodadas.length - 1];
+  const data = new Date((ultima && ultima.em) || Date.now());
+  const quando = isNaN(data.getTime()) ? '' : ` de ${data.toLocaleDateString('pt-BR')}`;
+  const outros = lista.slice(1).map(c => `${c.posicao}º ${c.nome}`).join(', ');
+  return `Cacheta${quando}\n🏆 ${lista[0].nome} venceu em ${plural(p.rodadas.length, 'rodada', 'rodadas')}.${outros ? `\n${outros}.` : ''}`;
+}
+
+async function compartilhar() {
+  const texto = textoResultado();
+  if (navigator.share && !emFrame) {
+    try {
+      await navigator.share({ text: texto });
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return;
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(texto);
+    mostrarToast('Resultado copiado. É só colar no grupo da família.');
+    return;
+  } catch (e) { /* segue para a caixa de texto */ }
+  abrirTextoParaCopiar(texto);
+}
+
+// ------------------------------------------------------------------
+// Janelas
+// ------------------------------------------------------------------
+function abrir(d) {
+  if (d.open) return;
+  if (typeof d.showModal === 'function') d.showModal();
+  else d.setAttribute('open', '');
+}
+
+function fecharDialogos() {
+  for (const d of document.querySelectorAll('dialog[open]')) d.close();
+}
+
+function abrirInfo(titulo, html) {
+  fecharDialogos();
+  const d = $('#dlg-info');
+  d.querySelector('.dlg-corpo').innerHTML = `<h2 id="info-titulo" class="dlg-titulo">${esc(titulo)}</h2>${html}<button type="button" class="btn btn-secundario" data-fechar>Fechar</button>`;
+  abrir(d);
+  return d;
+}
+
+function confirmar({ titulo, texto, sim, nao = 'Cancelar', perigo = false }) {
+  return new Promise(resolver => {
+    fecharDialogos();
+    const d = $('#dlg-confirma');
+    d.querySelector('.dlg-corpo').innerHTML = `
+      <h2 id="conf-titulo" class="dlg-titulo">${esc(titulo)}</h2>
+      ${texto ? `<p>${esc(texto)}</p>` : ''}
+      <div class="dlg-botoes">
+        <button type="button" class="btn btn-secundario" data-resposta="nao">${esc(nao)}</button>
+        <button type="button" class="btn ${perigo ? 'btn-perigo' : 'btn-principal'}" data-resposta="sim">${esc(sim)}</button>
+      </div>`;
+    const aoClicar = e => {
+      const b = e.target.closest('[data-resposta]');
+      if (b) d.close(b.dataset.resposta);
+    };
+    d.addEventListener('click', aoClicar);
+    d.addEventListener('close', () => {
+      d.removeEventListener('click', aoClicar);
+      resolver(d.returnValue === 'sim');
+    }, { once: true });
+    d.returnValue = '';
+    abrir(d);
+    d.querySelector('[data-resposta="nao"]').focus();
+  });
+}
+
+function abrirMenu() {
+  fecharDialogos();
+  const tela = telaAtual();
+  const itens = [];
+  if (tela === 'jogo') itens.push('<button type="button" class="menu-item" data-acao="nomes">Corrigir nomes</button>');
+  if (tela === 'preparo') itens.push('<button type="button" class="menu-item" data-acao="regras">Regras da casa</button>');
+  itens.push('<button type="button" class="menu-item" data-acao="como-funciona">Como funciona</button>');
+  if (estado.arquivo.length) itens.push('<button type="button" class="menu-item" data-acao="placar">Quem mais ganhou</button>');
+  if (podeInstalar()) itens.push('<button type="button" class="menu-item" data-acao="instalar">Instalar o aplicativo</button>');
+  if ('wakeLock' in navigator) {
+    itens.push(`<label class="menu-item" for="opt-tela-acesa"><span>Manter a tela acesa durante a partida</span><input type="checkbox" role="switch" id="opt-tela-acesa" class="alternar"${estado.prefs.telaAcesa ? ' checked' : ''}></label>`);
+  }
+  if (!emFrame) {
+    const temas = [['auto', 'Automático'], ['claro', 'Claro'], ['escuro', 'Escuro']];
+    itens.push(`<div class="menu-item menu-tema"><span id="tema-rotulo">Tema</span><div class="tema-opcoes" role="group" aria-labelledby="tema-rotulo">${temas.map(([v, t]) => `<button type="button" data-acao="tema" data-tema="${v}" aria-pressed="${estado.prefs.tema === v}">${t}</button>`).join('')}</div></div>`);
+  }
+  if (tela === 'jogo') itens.push('<button type="button" class="menu-item menu-perigo" data-acao="encerrar">Encerrar partida</button>');
+  const d = $('#dlg-menu');
+  d.querySelector('.dlg-corpo').innerHTML = `
+    <h2 id="menu-titulo" class="dlg-titulo">Opções</h2>
+    <div class="menu-lista">${itens.join('')}</div>
+    <button type="button" class="btn btn-secundario" data-fechar>Fechar</button>`;
+  abrir(d);
+}
+
+function abrirComoFunciona() {
+  const r = (estado.partida && estado.partida.regras) || estado.preparo.regras;
+  abrirInfo('Como funciona', `
+    <ul class="lista-regras">${itensDasRegras(r).map(t => `<li>${t}</li>`).join('')}</ul>
+    <h3 class="dlg-subtitulo">Marcando no celular</h3>
+    <ol class="lista-regras">
+      <li>Quem correr, toque em <b>Correu</b>.</li>
+      <li>Quando alguém bater, toque em <b>Ganhou</b> nessa pessoa. Os outros ficam em <b>Perdeu</b> sozinhos.</li>
+      <li>Confira os números riscados e toque em <b>Anotar rodada</b>.</li>
+    </ol>
+    <p>Errou? Toque em <b>Desfazer</b>: a rodada volta com as marcações para corrigir.</p>`);
+}
+
+function passo(chave, rotulo) {
+  return `<div class="passo">
+      <span id="rot-${chave}">${rotulo}</span>
+      <div class="passo-controle" role="group" aria-labelledby="rot-${chave}">
+        <button type="button" class="passo-btn" id="menos-${chave}" data-acao="regra" data-regra="${chave}" data-delta="-1" aria-label="Diminuir">−</button>
+        <output class="passo-valor" id="val-${chave}" aria-live="polite"></output>
+        <button type="button" class="passo-btn" id="mais-${chave}" data-acao="regra" data-regra="${chave}" data-delta="1" aria-label="Aumentar">+</button>
+      </div>
+    </div>`;
+}
+
+function abrirRegras() {
+  abrirInfo('Regras da casa', `
+    <p class="nota">Valem para a próxima partida. Mude só se a família joga diferente.</p>
+    <div>
+      ${passo('inicio', 'Pontos para começar')}
+      ${passo('correr', 'Quem corre perde')}
+      ${passo('perder', 'Quem joga e não ganha perde')}
+    </div>
+    <button type="button" class="btn-link" id="btn-regras-padrao" data-acao="regras-padrao">Voltar para 10, 1 e 2</button>`);
+  atualizarRegras();
+}
+
+function atualizarRegras() {
+  const r = estado.preparo.regras;
+  for (const k of Object.keys(Motor.REGRAS_PADRAO)) {
+    const valor = $(`#val-${k}`);
+    if (!valor) return;
+    const [min, max] = Motor.LIMITES[k];
+    valor.textContent = r[k];
+    $(`#menos-${k}`).disabled = r[k] <= min;
+    $(`#mais-${k}`).disabled = r[k] >= max;
+  }
+  const p0 = Motor.REGRAS_PADRAO;
+  $('#btn-regras-padrao').hidden = r.inicio === p0.inicio && r.correr === p0.correr && r.perder === p0.perder;
+}
+
+function mudarRegra(chave, delta) {
+  const r = Object.assign({}, estado.preparo.regras);
+  r[chave] += delta;
+  estado.preparo.regras = Motor.regrasValidas(r);
+  salvar();
+  atualizarRegras();
+  if (telaAtual() === 'preparo') atualizarPreparo();
+}
+
+function placarGeral() {
+  const mapa = new Map();
+  for (const a of estado.arquivo) {
+    const k = chaveNome(a.vencedor);
+    const item = mapa.get(k) || { nome: a.vencedor, vitorias: 0 };
+    item.vitorias += 1;
+    item.nome = a.vencedor;
+    mapa.set(k, item);
+  }
+  return Array.from(mapa.values()).sort((x, y) => y.vitorias - x.vitorias || x.nome.localeCompare(y.nome, 'pt-BR'));
+}
+
+function abrirPlacar() {
+  const lista = placarGeral();
+  abrirInfo('Quem mais ganhou', `
+    <ul class="lista-simples">${lista.map(i => `<li><span>${esc(i.nome)}</span><span>${plural(i.vitorias, 'vitória', 'vitórias')}</span></li>`).join('')}</ul>
+    <p class="nota">${plural(estado.arquivo.length, 'partida terminada', 'partidas terminadas')} neste aparelho.</p>
+    <button type="button" class="btn-link" data-acao="apagar-placar">Apagar este placar</button>`);
+}
+
+async function apagarPlacar() {
+  const ok = await confirmar({
+    titulo: 'Apagar o placar de vitórias?',
+    texto: 'A contagem de quem mais ganhou volta a zero neste aparelho. Os nomes salvos continuam.',
+    sim: 'Apagar placar',
+    perigo: true,
+  });
+  if (!ok) return;
+  estado.arquivo = [];
+  salvar();
+  render();
+  mostrarToast('Placar de vitórias apagado.');
+}
+
+function abrirInstrucoesInstalar() {
+  abrirInfo('Instalar o aplicativo', `
+    <p>Instalado, o placar abre como um aplicativo, com ícone na tela inicial, e continua funcionando sem internet.</p>
+    <h3 class="dlg-subtitulo">Android, no Chrome</h3>
+    <p>Toque no menu <b>⋮</b> do Chrome e depois em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>
+    <h3 class="dlg-subtitulo">iPhone, no Safari</h3>
+    <p>Toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.</p>`);
+}
+
+async function instalar() {
+  fecharDialogos();
+  if (pedidoInstalacao) {
+    const pedido = pedidoInstalacao;
+    pedidoInstalacao = null;
+    try {
+      await pedido.prompt();
+    } catch (e) {
+      abrirInstrucoesInstalar();
+    }
+    return;
+  }
+  abrirInstrucoesInstalar();
+}
+
+function abrirTextoParaCopiar(texto) {
+  abrirInfo('Copie o resultado', `
+    <label class="sr" for="texto-resultado">Resultado da partida</label>
+    <textarea id="texto-resultado" class="texto-copiar" rows="5" readonly>${esc(texto)}</textarea>
+    <button type="button" class="btn btn-principal" data-acao="copiar-texto">Copiar</button>`);
+}
+
+async function copiarTexto() {
+  const t = $('#texto-resultado');
+  if (!t) return;
+  try {
+    await navigator.clipboard.writeText(t.value);
+    $('#dlg-info').close();
+    mostrarToast('Resultado copiado.');
+  } catch (e) {
+    t.focus();
+    t.select();
+    mostrarToast('O texto está selecionado. Use a opção Copiar do celular.');
+  }
+}
+
+function celula(c) {
+  if (c.tipo === 'fora') return '<td><span class="sr">fora</span></td>';
+  const perda = c.perdeu ? `<sup>−${c.perdeu}</sup>` : '';
+  if (c.saiu) return `<td class="t-saiu">fora${perda}</td>`;
+  return `<td class="t-${c.tipo}">${c.pontos}${perda}${c.tipo === 'ganhou' ? '<span class="sr"> (ganhou)</span>' : ''}</td>`;
+}
+
+function abrirCaderninho() {
+  fecharDialogos();
+  const p = estado.partida;
+  if (!p) return;
+  const linhas = Motor.linhaDoTempo(p);
+  const cabecalho = p.jogadores.map(j => `<th scope="col" title="${esc(j.nome)}"><span class="cad-nome">${esc(j.nome)}</span></th>`).join('');
+  const inicio = p.jogadores.map(() => `<td class="t-inicio">${p.regras.inicio}</td>`).join('');
+  const corpo = linhas.map(l => `<tr><th scope="row">${l.numero}</th>${p.jogadores.map(j => celula(l.celulas[j.id])).join('')}</tr>`).join('');
+  const d = $('#dlg-caderninho');
+  d.querySelector('.dlg-corpo').innerHTML = `
+    <div class="dlg-topo">
+      <h2 id="cad-titulo" class="dlg-titulo">Caderninho</h2>
+      <button type="button" class="btn btn-secundario" data-fechar>Fechar</button>
+    </div>
+    <div class="cad-rolagem" tabindex="0" role="region" aria-label="Pontos rodada a rodada">
+      <table class="cad" style="--colunas:${p.jogadores.length}">
+        <colgroup><col class="col-rodada">${p.jogadores.map(() => '<col>').join('')}</colgroup>
+        <thead><tr><th scope="col">Rodada</th>${cabecalho}</tr></thead>
+        <tbody><tr><th scope="row">Início</th>${inicio}</tr>${corpo}</tbody>
+      </table>
+      ${linhas.length ? '' : '<p class="cad-vazio">Nenhuma rodada anotada ainda.</p>'}
+    </div>
+    <p class="cad-legenda"><span class="leg-ouro">Dourado</span> é quem ganhou a rodada. Em vermelho, os pontos perdidos: −${p.regras.correr} para quem correu e −${p.regras.perder} para quem perdeu.</p>`;
+  abrir(d);
+  const rolagem = d.querySelector('.cad-rolagem');
+  rolagem.scrollTop = rolagem.scrollHeight;
+}
+
+function abrirNomes() {
+  fecharDialogos();
+  const p = estado.partida;
+  if (!p) return;
+  const d = $('#dlg-nomes');
+  d.querySelector('.dlg-corpo').innerHTML = `
+    <form id="form-nomes" class="dlg-corpo" style="padding:0" novalidate>
+      <h2 id="nomes-titulo" class="dlg-titulo">Corrigir nomes</h2>
+      <div class="nomes-campos">${p.jogadores.map((j, i) => `
+        <label class="sr" for="nome-${i}">Nome ${i + 1}</label>
+        <input id="nome-${i}" class="campo" data-id="${j.id}" type="text" maxlength="${MAX_NOME}" value="${esc(j.nome)}" autocapitalize="words" autocorrect="off" spellcheck="false">`).join('')}
+      </div>
+      <p class="erro" id="nomes-erro" role="alert"></p>
+      <div class="dlg-botoes">
+        <button type="button" class="btn btn-secundario" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-principal">Salvar nomes</button>
+      </div>
+    </form>`;
+  abrir(d);
+}
+
+function salvarNomesCorrigidos(form) {
+  const p = estado.partida;
+  if (!p) return;
+  const novos = Array.from(form.querySelectorAll('input[data-id]')).map(c => comMaiuscula(limparNome(c.value)));
+  const erro = form.querySelector('#nomes-erro');
+  if (novos.some(n => !n)) {
+    erro.textContent = 'Todo mundo precisa de um nome.';
+    return;
+  }
+  const chaves = novos.map(chaveNome);
+  if (new Set(chaves).size !== chaves.length) {
+    erro.textContent = 'Há dois nomes iguais. Use um apelido para diferenciar.';
+    return;
+  }
+  const antigos = p.jogadores.map(j => j.nome);
+  estado.partida = Object.assign({}, p, { jogadores: p.jogadores.map((j, i) => ({ id: j.id, nome: novos[i] })) });
+  antigos.forEach((antigo, i) => {
+    if (antigo !== novos[i]) estado.recentes = estado.recentes.map(r => (chaveNome(r) === chaveNome(antigo) ? novos[i] : r));
+  });
+  lembrarNomes(novos);
+  salvar();
+  $('#dlg-nomes').close();
+  render();
+  mostrarToast('Nomes corrigidos.');
+}
+
+// ------------------------------------------------------------------
+// Aviso rápido, tema e tela acesa
+// ------------------------------------------------------------------
+const toast = document.getElementById('toast');
+let tempoToast = 0;
+
+function mostrarToast(texto, opcoes) {
+  const { acao, aoAgir, duracao } = opcoes || {};
+  clearTimeout(tempoToast);
+  toast.innerHTML = `<span class="toast-texto">${esc(texto)}</span>${acao ? `<button type="button" class="toast-acao">${esc(acao)}</button>` : ''}`;
+  if (acao) {
+    toast.querySelector('.toast-acao').addEventListener('click', () => {
+      esconderToast();
+      aoAgir();
+    });
+  }
+  toast.classList.add('is-visivel');
+  tempoToast = setTimeout(esconderToast, duracao || (acao ? 8000 : 4500));
+}
+
+function esconderToast() {
+  clearTimeout(tempoToast);
+  toast.classList.remove('is-visivel');
+}
+
+const temaDoVisualizador = document.documentElement.getAttribute('data-theme');
+
+function aplicarTema() {
+  if (emFrame) return; // dentro de outra página, quem decide o tema é ela
+  const raiz = document.documentElement;
+  const t = estado.prefs.tema;
+  if (t === 'claro') raiz.setAttribute('data-theme', 'light');
+  else if (t === 'escuro') raiz.setAttribute('data-theme', 'dark');
+  else if (temaDoVisualizador) raiz.setAttribute('data-theme', temaDoVisualizador);
+  else raiz.removeAttribute('data-theme');
+}
+
+function mudarTema(t) {
+  estado.prefs.tema = ['auto', 'claro', 'escuro'].includes(t) ? t : 'auto';
+  salvar();
+  aplicarTema();
+  for (const b of document.querySelectorAll('[data-acao="tema"]')) b.setAttribute('aria-pressed', String(b.dataset.tema === estado.prefs.tema));
+}
+
+let travaTela = null;
+let pedindoTrava = false;
+async function atualizarTelaAcesa() {
+  if (!('wakeLock' in navigator)) return;
+  const querer = estado.prefs.telaAcesa && telaAtual() === 'jogo' && document.visibilityState === 'visible';
+  try {
+    if (querer && !travaTela && !pedindoTrava) {
+      pedindoTrava = true;
+      travaTela = await navigator.wakeLock.request('screen');
+      travaTela.addEventListener('release', () => { travaTela = null; });
+    } else if (!querer && travaTela) {
+      const t = travaTela;
+      travaTela = null;
+      await t.release();
+    }
+  } catch (e) {
+    travaTela = null;
+  } finally {
+    pedindoTrava = false;
+  }
+}
+
+// ------------------------------------------------------------------
+// Eventos
+// ------------------------------------------------------------------
+const ACOES = {
+  'comecar': comecar,
+  'remover': b => {
+    estado.preparo.nomes.splice(Number(b.dataset.indice), 1);
+    salvar();
+    atualizarPreparo();
+  },
+  'add-recente': b => { adicionarNome(b.dataset.nome); },
+  'regras': abrirRegras,
+  'regra': b => mudarRegra(b.dataset.regra, Number(b.dataset.delta)),
+  'regras-padrao': () => {
+    estado.preparo.regras = Object.assign({}, Motor.REGRAS_PADRAO);
+    salvar();
+    atualizarRegras();
+    if (telaAtual() === 'preparo') atualizarPreparo();
+  },
+  'placar': abrirPlacar,
+  'apagar-placar': apagarPlacar,
+  'anotar': anotar,
+  'caderninho': abrirCaderninho,
+  'menu': abrirMenu,
+  'desfazer': () => desfazer(),
+  'desfazer-confirmando': desfazerConfirmando,
+  'nomes': abrirNomes,
+  'como-funciona': abrirComoFunciona,
+  'instalar': instalar,
+  'encerrar': encerrar,
+  'de-novo': jogarDeNovo,
+  'mudar-jogadores': mudarJogadores,
+  'compartilhar': compartilhar,
+  'tema': b => mudarTema(b.dataset.tema),
+  'copiar-texto': copiarTexto,
+};
+
+document.addEventListener('click', e => {
+  const fechar = e.target.closest('[data-fechar]');
+  if (fechar) {
+    const d = fechar.closest('dialog');
+    if (d) d.close();
+    return;
+  }
+  const alvo = e.target.closest('[data-acao]');
+  if (!alvo || alvo.disabled) return;
+  const fn = ACOES[alvo.dataset.acao];
+  if (fn) fn(alvo, e);
+});
+
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('.escolha input[type="radio"]')) marcar(t.name.slice(2), t.value);
+  else if (t.id === 'opt-tela-acesa') {
+    estado.prefs.telaAcesa = t.checked;
+    salvar();
+    atualizarTelaAcesa();
+  }
+});
+
+document.addEventListener('submit', e => {
+  if (e.target.id === 'form-nome') {
+    e.preventDefault();
+    const campo = $('#campo-nome');
+    if (adicionarNome(campo.value)) campo.value = '';
+    campo.focus();
+  } else if (e.target.id === 'form-nomes') {
+    e.preventDefault();
+    salvarNomesCorrigidos(e.target);
+  }
+});
+
+document.addEventListener('input', e => {
+  if (e.target.id === 'campo-nome') {
+    const erro = $('#erro-nome');
+    if (erro) erro.textContent = '';
+  }
+});
+
+// Tocar fora da janela fecha a janela.
+for (const d of document.querySelectorAll('dialog')) {
+  d.addEventListener('click', e => { if (e.target === d) d.close(); });
+}
+
+document.addEventListener('visibilitychange', atualizarTelaAcesa);
+
+// Se o app estiver aberto em duas abas, as duas ficam iguais.
+window.addEventListener('storage', e => {
+  if (e.key === CHAVE) {
+    estado = carregar(e.newValue);
+    render();
+  }
+});
+
+// ------------------------------------------------------------------
+// Início
+// ------------------------------------------------------------------
+document.documentElement.lang = 'pt-BR';
+
+aplicarTema();
+render();
+})();
+</script>
+</body>
+</html>

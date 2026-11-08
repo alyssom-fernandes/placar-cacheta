@@ -1,0 +1,11 @@
+# versão instalável (em preparação)
+site/
+build.mjs
+ferramentas/sw-modelo.js
+ferramentas/gerar-icones.ps1
+
+# sistema
+.claude/
+node_modules/
+Thumbs.db
+desktop.ini
