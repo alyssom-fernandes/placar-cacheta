@@ -12,8 +12,8 @@
 <link rel="stylesheet" crossorigin="anonymous" href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&amp;family=Caveat:wght@600;700&amp;display=swap">
 <style>
 /* Conceito: a mesa de cacheta. Faixa verde de feltro no topo; embaixo, uma folha clara com
-   todo mundo na mesma tela, uma linha por pessoa. Caneta vermelha mostra o que vai mudar antes
-   de anotar; dourado marca quem ganhou. Coluna única, alinhada à esquerda, sem rolar na partida. */
+   todo mundo na mesma tela, uma faixa por pessoa que cresce ou encolhe conforme o tamanho da mesa.
+   Caneta vermelha mostra o que vai mudar antes de anotar; dourado marca quem ganhou. */
 :root {
   --feltro: #0F5C45;
   --sobre-feltro: #FFFFFF;
@@ -165,6 +165,7 @@ b, strong { font-weight: 600; }
 }
 .principal { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
 .coluna { padding-block: 2px 16px; }
+.app[data-tela="jogo"] .coluna { min-height: 100%; display: flex; flex-direction: column; padding-bottom: 6px; }
 .barra { flex: none; background: var(--folha); border-top: 1px solid var(--linha); }
 .barra-dentro { padding-block: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
 
@@ -233,6 +234,42 @@ b, strong { font-weight: 600; }
 .resumo b { font-weight: 700; }
 .txt-perdeu { color: var(--perdeu); font-weight: 600; }
 
+/* ---------- Campos de pontos (− número +) ---------- */
+.passo-controle { flex: none; display: flex; align-items: center; gap: 6px; }
+.passo-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--linha-forte);
+  background: var(--folha-2);
+  color: var(--texto);
+  font-size: 1.4rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.passo-btn:disabled { opacity: .35; }
+.passo-valor { min-width: 2.2ch; text-align: center; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.passo-campo {
+  width: 3.2rem;
+  height: 44px;
+  padding: 0;
+  border-radius: 10px;
+  border: 1.5px solid var(--linha-forte);
+  background: var(--folha);
+  color: var(--texto);
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.passo-campo::-webkit-outer-spin-button, .passo-campo::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.passo-campo:focus { outline: none; border-color: var(--foco); box-shadow: 0 0 0 3px var(--anel); }
+.passo-pequeno { gap: 4px; }
+.passo-pequeno .passo-btn { width: 38px; height: 40px; font-size: 1.25rem; }
+.passo-pequeno .passo-campo { width: 2.9rem; height: 40px; font-size: 1.02rem; }
+
 /* ---------- Preparação ---------- */
 .form-nome { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding-top: 16px; }
 .rotulo { font-weight: 600; font-size: 1.02rem; }
@@ -272,8 +309,8 @@ b, strong { font-weight: 600; }
 }
 .chip-mais { color: var(--principal-texto); font-weight: 700; }
 .lista-nomes { list-style: none; padding: 0; margin-top: 14px; border-top: 1px solid var(--linha); }
-.nome-linha { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 50px; border-bottom: 1px solid var(--linha); }
-.nome-linha-texto { min-width: 0; font-size: 1.06rem; font-weight: 600; overflow-wrap: anywhere; }
+.nome-linha { display: flex; align-items: center; gap: 8px; min-height: 52px; border-bottom: 1px solid var(--linha); }
+.nome-linha-texto { flex: 1; min-width: 0; font-size: 1.06rem; font-weight: 600; overflow-wrap: anywhere; }
 .vazio { padding-block: 14px; color: var(--texto-2); font-size: .95rem; border-bottom: 1px solid var(--linha); }
 .linhas-extra { margin-top: 22px; border-top: 1px solid var(--linha); }
 .linha-extra {
@@ -282,26 +319,30 @@ b, strong { font-weight: 600; }
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  min-height: 52px;
-  padding: 0;
+  min-height: 54px;
+  padding: 6px 0;
   border: 0;
   border-bottom: 1px solid var(--linha);
   background: none;
   text-align: left;
-  font-weight: 600;
   font-size: .98rem;
   color: var(--texto);
+  cursor: pointer;
 }
-.linha-extra span { font-weight: 400; font-size: .86rem; color: var(--texto-2); text-align: right; }
+.linha-rotulo { display: grid; gap: 1px; font-weight: 600; }
+.linha-ajuda { font-size: .8rem; font-weight: 400; color: var(--texto-2); }
+.linha-valor { font-size: .86rem; color: var(--texto-2); text-align: right; }
 
 /* ---------- Partida ---------- */
-.mesa { list-style: none; padding: 0; }
+.mesa { list-style: none; padding: 0; flex: 1 1 auto; display: flex; flex-direction: column; }
 .jogador {
+  flex: 1 1 0;
+  min-height: auto; /* nunca menor que o próprio conteúdo: assim dá para saber quando não cabe */
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   column-gap: 10px;
-  min-height: var(--linha-altura, 66px);
+  row-gap: 10px;
   margin-inline: -8px;
   padding: 6px 8px;
   border-bottom: 1px solid var(--linha);
@@ -374,8 +415,10 @@ b, strong { font-weight: 600; }
 .opcao input:disabled { cursor: not-allowed; }
 .opcao > span {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1px;
   height: 44px;
   padding: 0 2px;
   border-radius: 10px;
@@ -384,10 +427,12 @@ b, strong { font-weight: 600; }
   color: var(--texto-2);
   font-size: .8rem;
   font-weight: 600;
+  line-height: 1.1;
   user-select: none;
   -webkit-user-select: none;
   transition: background-color .15s, color .15s, border-color .15s;
 }
+.opcao small { display: none; font-size: .72rem; font-weight: 500; opacity: .85; }
 .opcao-correu input:checked + span { background: var(--correu-claro); border-color: var(--correu); color: var(--correu); }
 .opcao-perdeu input:checked + span,
 .jogador.is-perdeu-auto .opcao-perdeu > span { background: var(--perdeu-claro); border-color: var(--perdeu); color: var(--perdeu); }
@@ -400,12 +445,6 @@ b, strong { font-weight: 600; }
 @media (hover: hover) {
   .opcao input:not(:checked):not(:disabled):hover + span { border-color: var(--linha-forte); color: var(--texto); }
 }
-/* Muita gente na mesa ou tela baixa: tudo um pouco menor para caber sem rolar. */
-.mesa.compacta .jogador { padding-block: 4px; }
-.mesa.compacta .nome { font-size: .98rem; -webkit-line-clamp: 1; }
-.mesa.compacta .num { font-size: 1.28rem; }
-.mesa.compacta .novo { font-size: 1.6rem; }
-.mesa.compacta .opcao > span { height: 40px; }
 @media (min-width: 390px) {
   .escolha { grid-template-columns: repeat(3, 64px); }
   .opcao > span { font-size: .86rem; }
@@ -414,6 +453,48 @@ b, strong { font-weight: 600; }
   .escolha { grid-template-columns: repeat(3, 52px); gap: 4px; }
   .opcao > span { font-size: .74rem; }
 }
+
+/* Tamanhos da mesa: o JavaScript escolhe pelo espaço que cada pessoa tem na tela. */
+.mesa.compacta .jogador { padding-block: 3px; }
+.mesa.compacta .nome { font-size: .98rem; -webkit-line-clamp: 1; }
+.mesa.compacta .num { font-size: 1.28rem; }
+.mesa.compacta .novo { font-size: 1.6rem; }
+.mesa.compacta .opcao > span { height: 40px; }
+
+.mesa.mini .jogador { padding-block: 1px; }
+.mesa.mini .quem { display: flex; align-items: baseline; gap: 8px; }
+.mesa.mini .nome { display: block; flex: 0 1 auto; min-width: 0; font-size: .92rem; white-space: nowrap; text-overflow: ellipsis; }
+.mesa.mini .placar { flex: none; flex-wrap: nowrap; }
+.mesa.mini .num { font-size: 1.1rem; }
+.mesa.mini .novo { font-size: 1.35rem; }
+.mesa.mini .aviso { display: none; }
+.mesa.mini .opcao > span { height: 34px; font-size: .74rem; }
+
+.mesa.media .nome { font-size: 1.16rem; }
+.mesa.media .num { font-size: 1.8rem; }
+.mesa.media .novo { font-size: 2.15rem; }
+.mesa.media .escolha { grid-template-columns: repeat(3, 62px); }
+.mesa.media .opcao > span { height: 50px; font-size: .86rem; }
+@media (min-width: 390px) { .mesa.media .escolha { grid-template-columns: repeat(3, 70px); } .mesa.media .opcao > span { font-size: .92rem; } }
+
+.mesa.grande .jogador, .mesa.enorme .jogador { grid-template-columns: minmax(0, 1fr); align-content: center; padding-block: 12px; }
+.mesa.grande .quem, .mesa.enorme .quem { grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 12px; }
+.mesa.grande .placar, .mesa.enorme .placar { justify-content: flex-end; }
+.mesa.grande .escolha, .mesa.enorme .escolha { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.mesa.grande .opcao > span, .mesa.enorme .opcao > span { border-radius: 14px; }
+.mesa.grande .opcao small, .mesa.enorme .opcao small { display: block; }
+.mesa.grande .nome { font-size: 1.36rem; }
+.mesa.grande .num { font-size: 2.2rem; }
+.mesa.grande .novo { font-size: 2.5rem; }
+.mesa.grande .aviso { font-size: .86rem; }
+.mesa.grande .opcao > span { height: 58px; font-size: 1rem; }
+.mesa.enorme .nome { font-size: 1.62rem; }
+.mesa.enorme .num { font-size: 2.8rem; }
+.mesa.enorme .novo { font-size: 3.1rem; }
+.mesa.enorme .aviso { font-size: .92rem; }
+.mesa.enorme .opcao > span { height: 70px; font-size: 1.08rem; }
+.mesa.enorme .opcao small { font-size: .8rem; }
+
 @media (max-height: 720px) {
   .faixa-dentro { min-height: 58px; padding-block: 8px; }
   .rodada { font-size: 1.35rem; }
@@ -423,7 +504,7 @@ b, strong { font-weight: 600; }
   .resumo { min-height: 1.3em; font-size: .86rem; }
   .acoes .btn { min-height: 48px; }
 }
-.fora { padding-top: 10px; font-size: .88rem; line-height: 1.5; color: var(--texto-2); }
+.fora { flex: none; padding-top: 10px; font-size: .88rem; line-height: 1.5; color: var(--texto-2); }
 .fora s { font-weight: 600; text-decoration-color: var(--perdeu); text-decoration-thickness: 2px; }
 
 /* ---------- Fim de jogo ---------- */
@@ -497,6 +578,7 @@ b, strong { font-weight: 600; }
   padding-right: max(18px, env(safe-area-inset-right, 0px));
   padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
 }
+.dlg-form { padding: 0; }
 .dlg-baixo { width: 100%; max-width: var(--coluna); margin: auto auto 0; border-radius: 20px 20px 0 0; }
 .dlg-caixa { width: calc(100% - 32px); max-width: 440px; border-radius: 18px; }
 .dlg-cheio { width: 100%; max-width: 820px; height: 100%; max-height: 100%; margin: 0 auto; border-radius: 0; overflow: hidden; }
@@ -567,25 +649,18 @@ b, strong { font-weight: 600; }
 .alternar:checked { background: var(--principal); }
 .alternar:checked::after { transform: translateX(20px); }
 .passo { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 60px; border-bottom: 1px solid var(--linha); }
-.passo-controle { flex: none; display: flex; align-items: center; gap: 6px; }
-.passo-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--linha-forte);
-  background: var(--folha-2);
-  color: var(--texto);
-  font-size: 1.4rem;
-  font-weight: 600;
-  line-height: 1;
-}
-.passo-btn:disabled { opacity: .35; }
-.passo-valor { min-width: 2.2ch; text-align: center; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .lista-simples { list-style: none; padding: 0; border-top: 1px solid var(--linha); }
 .lista-simples li { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 46px; border-bottom: 1px solid var(--linha); }
 .lista-simples li > span:last-child { color: var(--texto-2); font-variant-numeric: tabular-nums; }
 .nota { font-size: .88rem; color: var(--texto-2); }
 .nomes-campos { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.ajustes { list-style: none; padding: 0; border-top: 1px solid var(--linha); }
+.ajuste-linha { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 58px; padding-block: 4px; border-bottom: 1px solid var(--linha); }
+.ajuste-nome { min-width: 0; display: grid; gap: 1px; font-weight: 600; overflow-wrap: anywhere; }
+.ajuste-antes { font-size: .78rem; font-weight: 500; color: var(--texto-2); }
+.ajuste-antes:empty { display: none; }
+.ajuste-linha.is-mudou .ajuste-antes { color: var(--correu); }
+.ajuste-linha.is-mudou .passo-campo { border-color: var(--correu); background: var(--correu-claro); }
 .texto-copiar {
   width: 100%;
   padding: 12px;
@@ -601,7 +676,7 @@ b, strong { font-weight: 600; }
 .cad-rolagem { flex: 1; min-height: 0; overflow: auto; overscroll-behavior: contain; }
 .cad { width: 100%; min-width: calc(3rem + var(--colunas, 4) * 2.9rem); border-collapse: separate; border-spacing: 0; table-layout: fixed; font-variant-numeric: tabular-nums; }
 .cad th, .cad td { padding: 7px 2px; text-align: center; border-bottom: 1px solid var(--linha); }
-.cad .col-rodada { width: 3rem; }
+.cad .col-rodada { width: 3.2rem; }
 .cad thead th {
   position: sticky;
   top: 0;
@@ -618,11 +693,14 @@ b, strong { font-weight: 600; }
 .cad td { font-size: .98rem; font-weight: 600; }
 .cad .t-ganhou { background: var(--ouro-claro); }
 .cad .t-saiu { color: var(--perdeu); font-size: .78rem; }
-.cad .t-inicio { color: var(--texto-2); font-weight: 500; }
+.cad .t-inicio, .cad .t-igual { color: var(--texto-2); font-weight: 500; }
+.cad .linha-ajuste th { color: var(--correu); }
+.cad .t-ajuste { background: var(--correu-claro); color: var(--correu); }
 .cad sup { margin-left: 1px; font-size: .62rem; font-weight: 700; color: var(--perdeu); }
 .cad-vazio { padding-block: 12px; color: var(--texto-2); }
 .cad-legenda { font-size: .84rem; color: var(--texto-2); }
 .leg-ouro { padding-inline: .3em; border-radius: 4px; background: var(--ouro-claro); color: var(--texto); box-shadow: inset 0 0 0 1px var(--ouro); }
+.leg-azul { padding-inline: .3em; border-radius: 4px; background: var(--correu-claro); color: var(--correu); }
 
 /* ---------- Aviso rápido ---------- */
 .toast {
@@ -683,6 +761,7 @@ b, strong { font-weight: 600; }
 <dialog id="dlg-caderninho" class="dlg dlg-cheio" aria-labelledby="cad-titulo"><div class="dlg-corpo"></div></dialog>
 <dialog id="dlg-info" class="dlg dlg-caixa" aria-labelledby="info-titulo"><div class="dlg-corpo"></div></dialog>
 <dialog id="dlg-nomes" class="dlg dlg-caixa" aria-labelledby="nomes-titulo"><div class="dlg-corpo"></div></dialog>
+<dialog id="dlg-ajuste" class="dlg dlg-caixa" aria-labelledby="ajuste-titulo"><div class="dlg-corpo"></div></dialog>
 <dialog id="dlg-confirma" class="dlg dlg-caixa" aria-labelledby="conf-titulo"><div class="dlg-corpo"></div></dialog>
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
@@ -692,9 +771,13 @@ b, strong { font-weight: 600; }
 
 // #region motor
 // Regras e contas da cacheta, sem nada de tela. Os testes em testes/regras.test.mjs leem este trecho.
+// Uma partida guarda a lista de acontecimentos: rodadas jogadas e ajustes de pontos feitos à mão.
 const Motor = (() => {
   const REGRAS_PADRAO = Object.freeze({ inicio: 10, correr: 1, perder: 2 });
   const LIMITES = Object.freeze({ inicio: [1, 30], correr: [1, 5], perder: [1, 10] });
+  const MAX_PONTOS = 99;
+
+  const ehAjuste = r => !!r && r.tipo === 'ajuste';
 
   function regrasValidas(r) {
     const saida = {};
@@ -717,21 +800,38 @@ const Motor = (() => {
     };
   }
 
-  // Pontos de cada um, quem está na mesa e em que rodada cada um saiu.
+  // Pontos de cada um, quem está na mesa, quantas rodadas já foram jogadas
+  // e depois de quantas rodadas cada um saiu.
   function situacao(p) {
     const pontos = {};
     const saiuNa = {};
+    const saiuNoAjuste = {};
+    let jogadas = 0;
     for (const j of p.jogadores) pontos[j.id] = p.regras.inicio;
-    p.rodadas.forEach((r, i) => {
+    for (const r of p.rodadas) {
+      if (ehAjuste(r)) {
+        for (const id of Object.keys(r.pontos)) {
+          pontos[id] = r.pontos[id];
+          if (pontos[id] > 0) {
+            delete saiuNa[id];
+            delete saiuNoAjuste[id];
+          } else if (!(id in saiuNa)) {
+            saiuNa[id] = jogadas;
+            saiuNoAjuste[id] = true;
+          }
+        }
+        continue;
+      }
+      jogadas += 1;
       for (const id of r.correram) pontos[id] -= p.regras.correr;
       for (const id of r.jogaram) if (id !== r.vencedor) pontos[id] -= p.regras.perder;
       for (const id of r.correram.concat(r.jogaram)) {
-        if (pontos[id] <= 0 && !(id in saiuNa)) saiuNa[id] = i + 1;
+        if (pontos[id] <= 0 && !(id in saiuNa)) saiuNa[id] = jogadas;
       }
-    });
+    }
     const ativos = p.jogadores.map(j => j.id).filter(id => pontos[id] > 0);
     const acabou = p.rodadas.length > 0 && ativos.length <= 1;
-    return { pontos, saiuNa, ativos, acabou, campeao: acabou && ativos.length === 1 ? ativos[0] : null };
+    return { pontos, saiuNa, saiuNoAjuste, jogadas, ativos, acabou, campeao: acabou && ativos.length === 1 ? ativos[0] : null };
   }
 
   // Correr só é permitido se a pessoa continuar com pelo menos 1 ponto depois.
@@ -785,6 +885,24 @@ const Motor = (() => {
     return Object.assign({}, p, { rodadas: p.rodadas.concat([rodada]) });
   }
 
+  // Ajuste à mão: valores = { [id]: pontos }. Só entra no histórico quem mudou.
+  // Quem fica com 0 sai do jogo; quem volta a ter pontos volta para a mesa.
+  function ajustar(p, valores, em) {
+    const sit = situacao(p);
+    if (sit.acabou) throw new Error('partida-encerrada');
+    const mudou = {};
+    for (const j of p.jogadores) {
+      if (!valores || !(j.id in valores)) continue;
+      const v = Number(valores[j.id]);
+      if (!Number.isInteger(v) || v < 0 || v > MAX_PONTOS) throw new Error('valor-invalido');
+      if (v !== Math.max(0, sit.pontos[j.id])) mudou[j.id] = v;
+    }
+    if (!Object.keys(mudou).length) return p;
+    const comPontos = p.jogadores.filter(j => (j.id in mudou ? mudou[j.id] : sit.pontos[j.id]) > 0).length;
+    if (comPontos < 2) throw new Error('poucos-com-pontos');
+    return Object.assign({}, p, { rodadas: p.rodadas.concat([{ tipo: 'ajuste', em: String(em || ''), pontos: mudou }]) });
+  }
+
   function desfazer(p) {
     return p.rodadas.length ? Object.assign({}, p, { rodadas: p.rodadas.slice(0, -1) }) : p;
   }
@@ -792,38 +910,56 @@ const Motor = (() => {
   // Marcas de uma rodada já anotada, para corrigir depois de desfazer.
   function marcasDaRodada(r) {
     const m = {};
+    if (ehAjuste(r)) return m;
     for (const id of r.correram) m[id] = 'correu';
     if (r.vencedor && r.jogaram.length > 1) m[r.vencedor] = 'ganhou';
     return m;
   }
 
   // Quem está na mesa vem antes; entre quem saiu, quem saiu por último fica na frente.
-  // Quem saiu na mesma rodada empata.
+  // Quem saiu depois da mesma rodada empata.
   function classificacao(p, sit) {
     sit = sit || situacao(p);
     const lista = p.jogadores.map((j, ordem) => {
-      const saiu = sit.saiuNa[j.id] || null;
+      const saiu = j.id in sit.saiuNa ? sit.saiuNa[j.id] : null;
       return {
         id: j.id,
         nome: j.nome,
         pontos: Math.max(0, sit.pontos[j.id]),
         saiuNa: saiu,
+        noAjuste: !!sit.saiuNoAjuste[j.id],
         ordem,
-        chave: saiu ? [1, -saiu] : [0, -sit.pontos[j.id]],
+        chave: saiu !== null ? [1, -saiu] : [0, -sit.pontos[j.id]],
       };
     });
     const compara = (a, b) => (a.chave[0] - b.chave[0]) || (a.chave[1] - b.chave[1]);
     lista.sort((a, b) => compara(a, b) || a.ordem - b.ordem);
     for (const item of lista) item.posicao = 1 + lista.filter(o => compara(o, item) < 0).length;
-    return lista.map(({ id, nome, pontos, saiuNa, posicao }) => ({ id, nome, pontos, saiuNa, posicao }));
+    return lista.map(({ id, nome, pontos, saiuNa, noAjuste, posicao }) => ({ id, nome, pontos, saiuNa, noAjuste, posicao }));
   }
 
-  // Uma linha por rodada com os pontos de cada um depois dela, como no caderninho.
+  // Uma linha por acontecimento, com os pontos de cada um depois dele, como no caderninho.
   function linhaDoTempo(p) {
     const pontos = {};
+    let jogadas = 0;
     for (const j of p.jogadores) pontos[j.id] = p.regras.inicio;
-    return p.rodadas.map((r, i) => {
+    return p.rodadas.map(r => {
       const celulas = {};
+      if (ehAjuste(r)) {
+        for (const j of p.jogadores) {
+          const id = j.id;
+          const mudou = id in r.pontos;
+          if (mudou) pontos[id] = r.pontos[id];
+          celulas[id] = {
+            tipo: mudou ? 'ajuste' : pontos[id] > 0 ? 'igual' : 'fora',
+            pontos: pontos[id],
+            perdeu: 0,
+            saiu: mudou && pontos[id] <= 0,
+          };
+        }
+        return { tipo: 'ajuste', numero: null, em: r.em, vencedor: null, celulas };
+      }
+      jogadas += 1;
       for (const j of p.jogadores) {
         const id = j.id;
         let c;
@@ -840,11 +976,11 @@ const Motor = (() => {
         c.saiu = c.tipo !== 'fora' && pontos[id] <= 0;
         celulas[id] = c;
       }
-      return { numero: i + 1, em: r.em, vencedor: r.vencedor, celulas };
+      return { tipo: 'rodada', numero: jogadas, em: r.em, vencedor: r.vencedor, celulas };
     });
   }
 
-  // Confere uma partida lida do armazenamento. Rodadas que não fazem sentido são descartadas.
+  // Confere uma partida lida do armazenamento. Acontecimentos que não fazem sentido são descartados.
   function partidaValida(b) {
     if (!b || typeof b !== 'object' || !Array.isArray(b.jogadores)) return null;
     const vistos = new Set();
@@ -864,7 +1000,17 @@ const Motor = (() => {
     };
     for (const r of Array.isArray(b.rodadas) ? b.rodadas : []) {
       const sit = situacao(p);
-      if (sit.acabou || !r || typeof r !== 'object' || !Array.isArray(r.correram) || !Array.isArray(r.jogaram)) break;
+      if (sit.acabou || !r || typeof r !== 'object') break;
+      const em = typeof r.em === 'string' ? r.em : '';
+      if (ehAjuste(r)) {
+        if (!r.pontos || typeof r.pontos !== 'object') break;
+        const entradas = Object.entries(r.pontos);
+        const certo = entradas.length > 0 && entradas.every(([id, v]) => vistos.has(id) && Number.isInteger(v) && v >= 0 && v <= MAX_PONTOS);
+        if (!certo) break;
+        p = Object.assign({}, p, { rodadas: p.rodadas.concat([{ tipo: 'ajuste', em, pontos: Object.assign({}, r.pontos) }]) });
+        continue;
+      }
+      if (!Array.isArray(r.correram) || !Array.isArray(r.jogaram)) break;
       const todos = r.correram.concat(r.jogaram);
       const coerente = todos.length === sit.ativos.length
         && new Set(todos).size === todos.length
@@ -872,20 +1018,15 @@ const Motor = (() => {
         && r.jogaram.includes(r.vencedor)
         && r.correram.every(id => podeCorrer(sit.pontos[id], p.regras));
       if (!coerente) break;
-      const rodada = {
-        em: typeof r.em === 'string' ? r.em : '',
-        correram: r.correram.slice(),
-        jogaram: r.jogaram.slice(),
-        vencedor: r.vencedor,
-      };
+      const rodada = { em, correram: r.correram.slice(), jogaram: r.jogaram.slice(), vencedor: r.vencedor };
       p = Object.assign({}, p, { rodadas: p.rodadas.concat([rodada]) });
     }
     return p;
   }
 
   return {
-    REGRAS_PADRAO, LIMITES, regrasValidas, criarPartida, situacao, podeCorrer, avaliar,
-    anotar, desfazer, marcasDaRodada, classificacao, linhaDoTempo, partidaValida,
+    REGRAS_PADRAO, LIMITES, MAX_PONTOS, ehAjuste, regrasValidas, criarPartida, situacao, podeCorrer,
+    avaliar, anotar, ajustar, desfazer, marcasDaRodada, classificacao, linhaDoTempo, partidaValida,
   };
 })();
 // #endregion motor
@@ -912,6 +1053,10 @@ const comMaiuscula = s => (s || '').split(' ').map((p, i) => (
 const juntar = lista => (lista.length < 2 ? lista.join('') : `${lista.slice(0, -1).join(', ')} e ${lista[lista.length - 1]}`);
 const cssId = id => (window.CSS && CSS.escape ? CSS.escape(id) : id);
 const agora = () => new Date().toISOString();
+const limitarPontos = v => {
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? Math.min(Motor.MAX_PONTOS, Math.max(0, n)) : 0;
+};
 const vibrar = padrao => { try { if (navigator.vibrate) navigator.vibrate(padrao); } catch (e) { /* aparelho sem vibração */ } };
 const textoNaoCorre = r => (r.correr === 1 ? 'Com 1 ponto não dá para correr.' : `Com ${r.correr} pontos ou menos não dá para correr.`);
 const resumoRegras = r => `${plural(r.inicio, 'ponto', 'pontos')}, correr −${r.correr}, perder −${r.perder}`;
@@ -938,7 +1083,7 @@ function estadoNovo() {
     versao: 1,
     partida: null,
     marcas: {},
-    preparo: { nomes: [], regras: Object.assign({}, Motor.REGRAS_PADRAO) },
+    preparo: { nomes: [], regras: Object.assign({}, Motor.REGRAS_PADRAO), continuar: false, pontos: {} },
     recentes: [],
     arquivo: [],
     prefs: { tema: 'auto', telaAcesa: true },
@@ -982,6 +1127,10 @@ function carregar(bruto) {
   const prep = d.preparo && typeof d.preparo === 'object' ? d.preparo : {};
   e.preparo.nomes = semRepetidos(Array.isArray(prep.nomes) ? prep.nomes : []).slice(0, MAX_JOGADORES);
   e.preparo.regras = Motor.regrasValidas(prep.regras);
+  e.preparo.continuar = prep.continuar === true;
+  if (prep.pontos && typeof prep.pontos === 'object') {
+    for (const [k, v] of Object.entries(prep.pontos)) if (typeof k === 'string' && Number.isInteger(v)) e.preparo.pontos[k] = limitarPontos(v);
+  }
   e.recentes = semRepetidos(Array.isArray(d.recentes) ? d.recentes : []).slice(0, 30);
   e.arquivo = (Array.isArray(d.arquivo) ? d.arquivo : []).filter(a => a && typeof a.vencedor === 'string' && a.vencedor).slice(-500);
   const prefs = d.prefs && typeof d.prefs === 'object' ? d.prefs : {};
@@ -1044,32 +1193,62 @@ function faixa(titulo, subtitulo, extra) {
     </div></header>`;
 }
 
-// Mede a barra de baixo (para o aviso rápido ficar acima dela) e ajusta a altura das linhas
-// da partida para todo mundo caber na tela sem rolar.
+// Campo de pontos com − e +, usado na preparação e no ajuste.
+function campoPontos(id, valor, rotulo, contexto, ref, pequeno) {
+  return `<div class="passo-controle${pequeno ? ' passo-pequeno' : ''}" role="group" aria-label="${esc(rotulo)}">
+      <button type="button" class="passo-btn" data-acao="pontos-menos" data-alvo="${id}" aria-label="Um ponto a menos">−</button>
+      <input id="${id}" class="passo-campo" type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="${Motor.MAX_PONTOS}" value="${valor}" data-contexto="${contexto}" data-ref="${esc(ref)}" aria-label="${esc(rotulo)}">
+      <button type="button" class="passo-btn" data-acao="pontos-mais" data-alvo="${id}" aria-label="Um ponto a mais">+</button>
+    </div>`;
+}
+
+// ----- Medidas: a mesa ocupa a tela toda e muda de tamanho conforme o número de pessoas -----
+const TAMANHOS = ['enorme', 'grande', 'media', 'normal', 'compacta', 'mini'];
+
+function tamanhoPara(alturaPorPessoa) {
+  if (alturaPorPessoa >= 200) return 'enorme';
+  if (alturaPorPessoa >= 132) return 'grande';
+  if (alturaPorPessoa >= 90) return 'media';
+  if (alturaPorPessoa >= 62) return 'normal';
+  if (alturaPorPessoa >= 50) return 'compacta';
+  return 'mini';
+}
+
+function aplicarTamanho(mesa, tamanho) {
+  for (const t of TAMANHOS) mesa.classList.toggle(t, t === tamanho);
+}
+
+// completo: escolhe o tamanho pelo espaço livre. Sem "completo", só diminui se não estiver cabendo
+// (assim a tela não pula de tamanho enquanto alguém está marcando).
+function ajustarMesa(completo) {
+  const principal = $('#principal');
+  const mesa = app.querySelector('.mesa');
+  if (!principal || !mesa || !mesa.children.length) return;
+  let i = TAMANHOS.findIndex(t => mesa.classList.contains(t));
+  if (completo || i < 0) {
+    const coluna = principal.firstElementChild;
+    const estilo = getComputedStyle(coluna);
+    const fora = coluna.querySelector('.fora');
+    const livre = principal.clientHeight - parseFloat(estilo.paddingTop) - parseFloat(estilo.paddingBottom) - (fora ? fora.offsetHeight : 0);
+    i = TAMANHOS.indexOf(tamanhoPara(livre / mesa.children.length));
+    aplicarTamanho(mesa, TAMANHOS[i]);
+  }
+  while (i < TAMANHOS.length - 1 && principal.scrollHeight > principal.clientHeight + 1) {
+    i += 1;
+    aplicarTamanho(mesa, TAMANHOS[i]);
+  }
+}
+
 let quadroMedida = 0;
-function medir() {
+function medir(completo) {
   cancelAnimationFrame(quadroMedida);
   quadroMedida = requestAnimationFrame(() => {
     const barra = app.querySelector('.barra');
     document.body.style.setProperty('--altura-barra', `${barra ? Math.round(barra.getBoundingClientRect().height) : 0}px`);
-    ajustarMesa();
+    ajustarMesa(completo === true);
   });
 }
-
-function ajustarMesa() {
-  const principal = $('#principal');
-  const mesa = app.querySelector('.mesa');
-  if (!principal || !mesa || !mesa.children.length) return;
-  mesa.classList.remove('compacta');
-  mesa.style.removeProperty('--linha-altura');
-  const outros = principal.firstElementChild.offsetHeight - mesa.offsetHeight;
-  const porLinha = Math.floor((principal.clientHeight - outros) / mesa.children.length);
-  if (porLinha < 64) mesa.classList.add('compacta');
-  mesa.style.setProperty('--linha-altura', `${Math.max(52, Math.min(84, porLinha))}px`);
-  // nomes compridos em duas linhas podem não caber: aí também vale o modo compacto
-  if (principal.scrollHeight > principal.clientHeight + 1) mesa.classList.add('compacta');
-}
-const observador = 'ResizeObserver' in window ? new ResizeObserver(medir) : null;
+const observador = 'ResizeObserver' in window ? new ResizeObserver(() => medir(false)) : null;
 function observarMedidas() {
   if (observador) {
     observador.disconnect();
@@ -1078,10 +1257,16 @@ function observarMedidas() {
     if (barra) observador.observe(barra);
     if (principal) observador.observe(principal);
   }
-  ajustarMesa();
-  medir();
+  ajustarMesa(true);
+  medir(false);
 }
-window.addEventListener('resize', medir);
+let ultimaJanela = `${innerWidth}x${innerHeight}`;
+window.addEventListener('resize', () => {
+  const agoraJanela = `${innerWidth}x${innerHeight}`;
+  if (agoraJanela === ultimaJanela) return;
+  ultimaJanela = agoraJanela;
+  medir(true);
+});
 
 function itensDasRegras(r) {
   return [
@@ -1116,8 +1301,13 @@ function renderPreparo() {
   atualizarPreparo();
 }
 
+const pontosIniciais = nome => {
+  const k = chaveNome(nome);
+  return k in estado.preparo.pontos ? estado.preparo.pontos[k] : estado.preparo.regras.inicio;
+};
+
 function atualizarPreparo() {
-  const { nomes, regras } = estado.preparo;
+  const { nomes, regras, continuar } = estado.preparo;
   const usados = new Set(nomes.map(chaveNome));
 
   const sugestoes = estado.recentes.filter(n => !usados.has(chaveNome(n))).slice(0, 12);
@@ -1132,21 +1322,34 @@ function atualizarPreparo() {
     ? nomes.map((n, i) => `
       <li class="nome-linha">
         <span class="nome-linha-texto">${esc(n)}</span>
+        ${continuar ? campoPontos(`ini-${i}`, pontosIniciais(n), `Pontos de ${n}`, 'preparo', n, true) : ''}
         <button type="button" class="btn-icone" data-acao="remover" data-indice="${i}" aria-label="Tirar ${esc(n)} da lista">${ICONE_X}</button>
       </li>`).join('')
     : '<li class="vazio">Ninguém na lista ainda. Dá para jogar de 2 a 12 pessoas.</li>';
 
   const vitorias = estado.arquivo.length;
   $('#linhas-extra').innerHTML = `
-    <button type="button" class="linha-extra" data-acao="regras">Regras da casa<span>${resumoRegras(regras)}</span></button>
-    <button type="button" class="linha-extra" data-acao="como-funciona">Como funciona</button>
-    ${vitorias ? `<button type="button" class="linha-extra" data-acao="placar">Quem mais ganhou<span>${plural(vitorias, 'partida', 'partidas')}</span></button>` : ''}`;
+    <label class="linha-extra" for="opt-continuar">
+      <span class="linha-rotulo">Partida já começada<small class="linha-ajuda">Coloque os pontos de agora de cada um</small></span>
+      <input type="checkbox" role="switch" id="opt-continuar" class="alternar"${continuar ? ' checked' : ''}>
+    </label>
+    <button type="button" class="linha-extra" data-acao="regras"><span class="linha-rotulo">Regras da casa</span><span class="linha-valor">${resumoRegras(regras)}</span></button>
+    <button type="button" class="linha-extra" data-acao="como-funciona"><span class="linha-rotulo">Como funciona</span></button>
+    ${vitorias ? `<button type="button" class="linha-extra" data-acao="placar"><span class="linha-rotulo">Quem mais ganhou</span><span class="linha-valor">${plural(vitorias, 'partida', 'partidas')}</span></button>` : ''}`;
 
+  atualizarBotaoComecar();
+}
+
+function atualizarBotaoComecar() {
+  const { nomes, continuar } = estado.preparo;
   const b = $('#btn-comecar');
-  b.disabled = nomes.length < 2;
-  b.textContent = nomes.length >= 2
-    ? `Começar partida com ${nomes.length} pessoas`
-    : nomes.length === 1 ? 'Adicione mais uma pessoa' : 'Adicione pelo menos 2 pessoas';
+  if (!b) return;
+  const comPontos = continuar ? nomes.filter(n => pontosIniciais(n) > 0).length : nomes.length;
+  b.disabled = nomes.length < 2 || comPontos < 2;
+  if (nomes.length === 0) b.textContent = 'Adicione pelo menos 2 pessoas';
+  else if (nomes.length === 1) b.textContent = 'Adicione mais uma pessoa';
+  else if (comPontos < 2) b.textContent = 'Pelo menos 2 pessoas precisam ter pontos';
+  else b.textContent = `${continuar ? 'Continuar' : 'Começar'} partida com ${nomes.length} pessoas`;
 }
 
 function adicionarNome(bruto) {
@@ -1174,13 +1377,22 @@ function adicionarNome(bruto) {
 function comecar() {
   const nomes = estado.preparo.nomes.slice();
   if (nomes.length < 2) return;
-  estado.partida = Motor.criarPartida({
-    id: novoId(),
-    inicio: agora(),
-    jogadores: nomes.map(nome => ({ id: novoId(), nome })),
-    regras: estado.preparo.regras,
-  });
+  const jogadores = nomes.map(nome => ({ id: novoId(), nome }));
+  let partida = Motor.criarPartida({ id: novoId(), inicio: agora(), jogadores, regras: estado.preparo.regras });
+  if (estado.preparo.continuar) {
+    const valores = {};
+    for (const j of jogadores) valores[j.id] = pontosIniciais(j.nome);
+    try {
+      partida = Motor.ajustar(partida, valores, agora());
+    } catch (e) {
+      mostrarToast('Pelo menos 2 pessoas precisam ter pontos para começar.');
+      return;
+    }
+  }
+  estado.partida = partida;
   estado.marcas = {};
+  estado.preparo.continuar = false;
+  estado.preparo.pontos = {};
   lembrarNomes(nomes);
   salvar();
   pedirArmazenamentoDuradouro();
@@ -1189,10 +1401,14 @@ function comecar() {
 }
 
 // ----- Partida -----
+function textoFora(sit, id) {
+  return sit.saiuNoAjuste[id] ? 'no ajuste' : `na rodada ${sit.saiuNa[id]}`;
+}
+
 function renderJogo() {
   const p = estado.partida;
   const sit = Motor.situacao(p);
-  const n = p.rodadas.length + 1;
+  const n = sit.jogadas + 1;
   const fora = p.jogadores
     .filter(j => !sit.ativos.includes(j.id))
     .sort((a, b) => sit.saiuNa[b.id] - sit.saiuNa[a.id]);
@@ -1201,7 +1417,7 @@ function renderJogo() {
       '<button type="button" class="btn-faixa" data-acao="caderninho">Caderninho</button>')}
     <main class="principal" id="principal"><div class="coluna">
       <ul class="mesa" aria-label="Quem está na mesa">${sit.ativos.map(id => linhaJogador(p, sit, id)).join('')}</ul>
-      ${fora.length ? `<p class="fora">Fora do jogo: ${fora.map(j => `<s>${esc(j.nome)}</s> (rodada ${sit.saiuNa[j.id]})`).join(', ')}</p>` : ''}
+      ${fora.length ? `<p class="fora">Fora do jogo: ${fora.map(j => `<s>${esc(j.nome)}</s> (${textoFora(sit, j.id)})`).join(', ')}</p>` : ''}
     </div></main>
     <div class="barra"><div class="barra-dentro">
       <p id="resumo" class="resumo" aria-live="polite"></p>
@@ -1220,7 +1436,7 @@ function linhaJogador(p, sit, id) {
   if (marca === 'correu' && !corre) marca = '';
   const nome = esc(nomeDe(p, id));
   const perdeuAgora = animacao && animacao.perdas[id] > 0 ? animacao.perdas[id] : 0;
-  const opcao = (valor, texto, extra) => `<label class="opcao opcao-${valor}"><input type="radio" id="m-${id}-${valor}" name="m-${id}" value="${valor}"${marca === valor ? ' checked' : ''}${extra || ''}><span>${texto}</span></label>`;
+  const opcao = (valor, texto, dica, extra) => `<label class="opcao opcao-${valor}"><input type="radio" id="m-${id}-${valor}" name="m-${id}" value="${valor}"${marca === valor ? ' checked' : ''}${extra || ''}><span>${texto}<small>${dica}</small></span></label>`;
   return `<li class="jogador" data-id="${id}">
       <div class="quem">
         <h2 class="nome">${nome}</h2>
@@ -1228,7 +1444,7 @@ function linhaJogador(p, sit, id) {
       </div>
       <fieldset class="escolha">
         <legend class="sr">${nome} nesta rodada</legend>
-        ${opcao('correu', 'Correu', corre ? '' : ' disabled')}${opcao('perdeu', 'Perdeu')}${opcao('ganhou', 'Ganhou')}
+        ${opcao('correu', 'Correu', `−${p.regras.correr}`, corre ? '' : ' disabled')}${opcao('perdeu', 'Perdeu', `−${p.regras.perder}`)}${opcao('ganhou', 'Ganhou', 'não perde')}
       </fieldset>
     </li>`;
 }
@@ -1314,7 +1530,7 @@ function anotar() {
   estado.partida = Motor.anotar(p, estado.marcas, agora());
   estado.marcas = {};
   salvar();
-  const n = estado.partida.rodadas.length;
+  const n = sit.jogadas + 1;
   const perdas = {};
   for (const id of sit.ativos) perdas[id] = a.depois[id] === null ? 0 : sit.pontos[id] - a.depois[id];
   animacao = { perdas };
@@ -1322,35 +1538,34 @@ function anotar() {
   render();
   animacao = null;
   const saiu = a.saem.length ? ` ${juntar(a.saem.map(id => nomeDe(p, id)))} ${a.saem.length === 1 ? 'saiu' : 'saíram'} do jogo.` : '';
-  const alvo = { id: estado.partida.id, n };
+  const alvo = { id: estado.partida.id, total: estado.partida.rodadas.length };
   mostrarToast(`Rodada ${n} anotada.${saiu}`, { acao: 'Desfazer', aoAgir: () => desfazer(alvo) });
 }
 
 function desfazer(esperado) {
   const p = estado.partida;
   if (!p || !p.rodadas.length) return;
-  if (esperado && (esperado.id !== p.id || esperado.n !== p.rodadas.length)) {
-    mostrarToast('Essa rodada não pode mais ser desfeita por aqui.');
+  if (esperado && (esperado.id !== p.id || esperado.total !== p.rodadas.length)) {
+    mostrarToast('Isso não pode mais ser desfeito por aqui.');
     return;
   }
-  const n = p.rodadas.length;
-  const ultima = p.rodadas[n - 1];
+  const ultima = p.rodadas[p.rodadas.length - 1];
+  const n = Motor.situacao(p).jogadas;
   estado.partida = Motor.desfazer(p);
-  estado.marcas = Motor.marcasDaRodada(ultima);
+  if (!Motor.ehAjuste(ultima)) estado.marcas = Motor.marcasDaRodada(ultima);
   salvar();
   render();
-  mostrarToast(`Rodada ${n} desfeita. Corrija as marcações e anote de novo.`);
+  mostrarToast(Motor.ehAjuste(ultima) ? 'Ajuste de pontos desfeito.' : `Rodada ${n} desfeita. Corrija as marcações e anote de novo.`);
 }
 
 async function desfazerConfirmando() {
   const p = estado.partida;
   if (!p || !p.rodadas.length) return;
-  const n = p.rodadas.length;
-  const ok = await confirmar({
-    titulo: `Desfazer a rodada ${n}?`,
-    texto: 'Os pontos voltam a ser como estavam antes dela, e as marcações dela voltam para você corrigir.',
-    sim: 'Desfazer',
-  });
+  const ultima = p.rodadas[p.rodadas.length - 1];
+  const ajuste = Motor.ehAjuste(ultima);
+  const ok = await confirmar(ajuste
+    ? { titulo: 'Desfazer o ajuste de pontos?', texto: 'Os pontos voltam a ser como estavam antes do ajuste.', sim: 'Desfazer' }
+    : { titulo: `Desfazer a rodada ${Motor.situacao(p).jogadas}?`, texto: 'Os pontos voltam a ser como estavam antes dela, e as marcações dela voltam para você corrigir.', sim: 'Desfazer' });
   if (ok) desfazer();
 }
 
@@ -1373,13 +1588,85 @@ async function encerrar() {
   mostrarToast('Partida encerrada.');
 }
 
+// ----- Ajuste de pontos à mão -----
+function abrirAjuste() {
+  fecharDialogos();
+  const p = estado.partida;
+  if (!p) return;
+  const sit = Motor.situacao(p);
+  const ordem = p.jogadores.filter(j => sit.ativos.includes(j.id)).concat(p.jogadores.filter(j => !sit.ativos.includes(j.id)));
+  const d = $('#dlg-ajuste');
+  d.querySelector('.dlg-corpo').innerHTML = `
+    <form id="form-ajuste" class="dlg-corpo dlg-form" novalidate>
+      <h2 id="ajuste-titulo" class="dlg-titulo">Ajustar pontos</h2>
+      <p class="nota">Para corrigir um engano ou continuar uma partida que começou no papel. Quem ficar com 0 sai do jogo; quem voltar a ter pontos volta para a mesa.</p>
+      <ul class="ajustes">${ordem.map(j => {
+        const antes = Math.max(0, sit.pontos[j.id]);
+        return `<li class="ajuste-linha" data-id="${j.id}" data-antes="${antes}">
+          <span class="ajuste-nome">${esc(j.nome)}<small class="ajuste-antes"></small></span>
+          ${campoPontos(`aj-${j.id}`, antes, `Pontos de ${j.nome}`, 'ajuste', j.id, false)}
+        </li>`;
+      }).join('')}</ul>
+      <p class="erro" id="ajuste-erro" role="alert"></p>
+      <div class="dlg-botoes">
+        <button type="button" class="btn btn-secundario" data-fechar>Cancelar</button>
+        <button type="submit" class="btn btn-principal">Salvar pontos</button>
+      </div>
+    </form>`;
+  abrir(d);
+}
+
+function marcarMudancaAjuste(input) {
+  const linha = input.closest('.ajuste-linha');
+  if (!linha) return;
+  const antes = Number(linha.dataset.antes);
+  const valor = limitarPontos(input.value);
+  const mudou = valor !== antes;
+  linha.classList.toggle('is-mudou', mudou);
+  let texto = '';
+  if (mudou) {
+    texto = `era ${antes}`;
+    if (valor === 0) texto += ', sai do jogo';
+    else if (antes === 0) texto += ', volta para a mesa';
+  }
+  linha.querySelector('.ajuste-antes').textContent = texto;
+  const erro = $('#ajuste-erro');
+  if (erro) erro.textContent = '';
+}
+
+function salvarAjuste(form) {
+  const p = estado.partida;
+  if (!p) return;
+  const valores = {};
+  for (const campo of form.querySelectorAll('.passo-campo')) valores[campo.dataset.ref] = limitarPontos(campo.value);
+  let nova;
+  try {
+    nova = Motor.ajustar(p, valores, agora());
+  } catch (e) {
+    form.querySelector('#ajuste-erro').textContent = e.message === 'poucos-com-pontos'
+      ? 'Pelo menos 2 pessoas precisam ficar com pontos.'
+      : 'Algum valor não está certo. Use números de 0 a 99.';
+    return;
+  }
+  $('#dlg-ajuste').close();
+  if (nova === p) {
+    mostrarToast('Nenhum ponto mudou.');
+    return;
+  }
+  estado.partida = nova;
+  salvar();
+  render();
+  const alvo = { id: nova.id, total: nova.rodadas.length };
+  mostrarToast('Pontos ajustados.', { acao: 'Desfazer', aoAgir: () => desfazer(alvo) });
+}
+
 // ----- Fim de jogo -----
 function renderFim() {
   const p = estado.partida;
   const sit = Motor.situacao(p);
   const lista = Motor.classificacao(p, sit);
   const campeao = lista[0];
-  const n = p.rodadas.length;
+  const n = sit.jogadas;
   app.innerHTML = `
     ${faixa('<h1 class="rodada">Fim de jogo</h1>', `Acabou na rodada ${n}`,
       '<button type="button" class="btn-faixa" data-acao="caderninho">Caderninho</button>')}
@@ -1393,7 +1680,7 @@ function renderFim() {
         ${lista.map(c => `<li${c.posicao === 1 ? ' class="is-primeiro"' : ''}>
           <span class="pos">${c.posicao}º</span>
           <span class="classificacao-nome">${esc(c.nome)}</span>
-          <span class="como">${c.saiuNa ? `saiu na rodada ${c.saiuNa}` : `ficou com ${plural(c.pontos, 'ponto', 'pontos')}`}</span>
+          <span class="como">${c.saiuNa === null ? `ficou com ${plural(c.pontos, 'ponto', 'pontos')}` : c.noAjuste ? 'saiu no ajuste' : `saiu na rodada ${c.saiuNa}`}</span>
         </li>`).join('')}
       </ol>
       <div class="fim-links">
@@ -1418,7 +1705,7 @@ function arquivar(p) {
     id: p.id,
     inicio: p.inicio,
     fim: (ultima && ultima.em) || agora(),
-    rodadas: p.rodadas.length,
+    rodadas: sit.jogadas,
     jogadores: p.jogadores.map(j => j.nome),
     vencedor: nomeDe(p, sit.campeao),
   });
@@ -1449,6 +1736,8 @@ function mudarJogadores() {
   arquivar(p);
   estado.preparo.nomes = p.jogadores.map(j => j.nome);
   estado.preparo.regras = Object.assign({}, p.regras);
+  estado.preparo.continuar = false;
+  estado.preparo.pontos = {};
   estado.partida = null;
   estado.marcas = {};
   salvar();
@@ -1458,12 +1747,13 @@ function mudarJogadores() {
 
 function textoResultado() {
   const p = estado.partida;
-  const lista = Motor.classificacao(p);
+  const sit = Motor.situacao(p);
+  const lista = Motor.classificacao(p, sit);
   const ultima = p.rodadas[p.rodadas.length - 1];
   const data = new Date((ultima && ultima.em) || Date.now());
   const quando = isNaN(data.getTime()) ? '' : ` de ${data.toLocaleDateString('pt-BR')}`;
   const outros = lista.slice(1).map(c => `${c.posicao}º ${c.nome}`).join(', ');
-  return `Cacheta${quando}\n🏆 ${lista[0].nome} venceu em ${plural(p.rodadas.length, 'rodada', 'rodadas')}.${outros ? `\n${outros}.` : ''}`;
+  return `Cacheta${quando}\n🏆 ${lista[0].nome} venceu em ${plural(sit.jogadas, 'rodada', 'rodadas')}.${outros ? `\n${outros}.` : ''}`;
 }
 
 async function compartilhar() {
@@ -1535,7 +1825,10 @@ function abrirMenu() {
   fecharDialogos();
   const tela = telaAtual();
   const itens = [];
-  if (tela === 'jogo') itens.push('<button type="button" class="menu-item" data-acao="nomes">Corrigir nomes</button>');
+  if (tela === 'jogo') {
+    itens.push('<button type="button" class="menu-item" data-acao="ajustar">Ajustar pontos</button>');
+    itens.push('<button type="button" class="menu-item" data-acao="nomes">Corrigir nomes</button>');
+  }
   if (tela === 'preparo') itens.push('<button type="button" class="menu-item" data-acao="regras">Regras da casa</button>');
   itens.push('<button type="button" class="menu-item" data-acao="como-funciona">Como funciona</button>');
   if (estado.arquivo.length) itens.push('<button type="button" class="menu-item" data-acao="placar">Quem mais ganhou</button>');
@@ -1566,7 +1859,8 @@ function abrirComoFunciona() {
       <li>Quando alguém bater, toque em <b>Ganhou</b> nessa pessoa. Os outros ficam em <b>Perdeu</b> sozinhos.</li>
       <li>Confira os números riscados e toque em <b>Anotar rodada</b>.</li>
     </ol>
-    <p>Errou? Toque em <b>Desfazer</b>: a rodada volta com as marcações para corrigir.</p>`);
+    <p>Errou? Toque em <b>Desfazer</b>: a rodada volta com as marcações para corrigir.</p>
+    <p>Para mudar os pontos à mão, ou continuar uma partida que começou no papel, use <b>Ajustar pontos</b> no menu ⋯, ou ligue <b>Partida já começada</b> antes de começar.</p>`);
 }
 
 function passo(chave, rotulo) {
@@ -1651,7 +1945,7 @@ async function apagarPlacar() {
 
 function abrirInstrucoesInstalar() {
   abrirInfo('Instalar o aplicativo', `
-    <p>Instalado, o placar abre como um aplicativo, com ícone na tela inicial, e continua funcionando sem internet.</p>
+    <p>Instalado, o placar abre como um aplicativo, com ícone na tela inicial.</p>
     <h3 class="dlg-subtitulo">Android, no Chrome</h3>
     <p>Toque no menu <b>⋮</b> do Chrome e depois em <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</p>
     <h3 class="dlg-subtitulo">iPhone, no Safari</h3>
@@ -1698,7 +1992,10 @@ function celula(c) {
   if (c.tipo === 'fora') return '<td><span class="sr">fora</span></td>';
   const perda = c.perdeu ? `<sup>−${c.perdeu}</sup>` : '';
   if (c.saiu) return `<td class="t-saiu">fora${perda}</td>`;
-  return `<td class="t-${c.tipo}">${c.pontos}${perda}${c.tipo === 'ganhou' ? '<span class="sr"> (ganhou)</span>' : ''}</td>`;
+  let extra = '';
+  if (c.tipo === 'ganhou') extra = '<span class="sr"> (ganhou)</span>';
+  else if (c.tipo === 'ajuste') extra = '<span class="sr"> (ajustado)</span>';
+  return `<td class="t-${c.tipo}">${c.pontos}${perda}${extra}</td>`;
 }
 
 function abrirCaderninho() {
@@ -1706,9 +2003,12 @@ function abrirCaderninho() {
   const p = estado.partida;
   if (!p) return;
   const linhas = Motor.linhaDoTempo(p);
+  const temAjuste = linhas.some(l => l.tipo === 'ajuste');
   const cabecalho = p.jogadores.map(j => `<th scope="col" title="${esc(j.nome)}"><span class="cad-nome">${esc(j.nome)}</span></th>`).join('');
   const inicio = p.jogadores.map(() => `<td class="t-inicio">${p.regras.inicio}</td>`).join('');
-  const corpo = linhas.map(l => `<tr><th scope="row">${l.numero}</th>${p.jogadores.map(j => celula(l.celulas[j.id])).join('')}</tr>`).join('');
+  const corpo = linhas.map(l => (l.tipo === 'ajuste'
+    ? `<tr class="linha-ajuste"><th scope="row">Ajuste</th>${p.jogadores.map(j => celula(l.celulas[j.id])).join('')}</tr>`
+    : `<tr><th scope="row">${l.numero}</th>${p.jogadores.map(j => celula(l.celulas[j.id])).join('')}</tr>`)).join('');
   const d = $('#dlg-caderninho');
   d.querySelector('.dlg-corpo').innerHTML = `
     <div class="dlg-topo">
@@ -1723,7 +2023,7 @@ function abrirCaderninho() {
       </table>
       ${linhas.length ? '' : '<p class="cad-vazio">Nenhuma rodada anotada ainda.</p>'}
     </div>
-    <p class="cad-legenda"><span class="leg-ouro">Dourado</span> é quem ganhou a rodada. Em vermelho, os pontos perdidos: −${p.regras.correr} para quem correu e −${p.regras.perder} para quem perdeu.</p>`;
+    <p class="cad-legenda"><span class="leg-ouro">Dourado</span> é quem ganhou a rodada. Em vermelho, os pontos perdidos: −${p.regras.correr} para quem correu e −${p.regras.perder} para quem perdeu.${temAjuste ? ' <span class="leg-azul">Azul</span> é ponto ajustado à mão.' : ''}</p>`;
   abrir(d);
   const rolagem = d.querySelector('.cad-rolagem');
   rolagem.scrollTop = rolagem.scrollHeight;
@@ -1735,7 +2035,7 @@ function abrirNomes() {
   if (!p) return;
   const d = $('#dlg-nomes');
   d.querySelector('.dlg-corpo').innerHTML = `
-    <form id="form-nomes" class="dlg-corpo" style="padding:0" novalidate>
+    <form id="form-nomes" class="dlg-corpo dlg-form" novalidate>
       <h2 id="nomes-titulo" class="dlg-titulo">Corrigir nomes</h2>
       <div class="nomes-campos">${p.jogadores.map((j, i) => `
         <label class="sr" for="nome-${i}">Nome ${i + 1}</label>
@@ -1845,6 +2145,24 @@ async function atualizarTelaAcesa() {
 // ------------------------------------------------------------------
 // Eventos
 // ------------------------------------------------------------------
+function mudarCampoPontos(botao, delta) {
+  const campo = document.getElementById(botao.dataset.alvo);
+  if (!campo) return;
+  campo.value = limitarPontos(Number(campo.value) + delta);
+  campo.dispatchEvent(new Event('change', { bubbles: true }));
+}
+
+function campoPontosMudou(campo) {
+  campo.value = limitarPontos(campo.value);
+  if (campo.dataset.contexto === 'preparo') {
+    estado.preparo.pontos[chaveNome(campo.dataset.ref)] = Number(campo.value);
+    salvar();
+    atualizarBotaoComecar();
+  } else if (campo.dataset.contexto === 'ajuste') {
+    marcarMudancaAjuste(campo);
+  }
+}
+
 const ACOES = {
   'comecar': comecar,
   'remover': b => {
@@ -1861,9 +2179,12 @@ const ACOES = {
     atualizarRegras();
     if (telaAtual() === 'preparo') atualizarPreparo();
   },
+  'pontos-menos': b => mudarCampoPontos(b, -1),
+  'pontos-mais': b => mudarCampoPontos(b, 1),
   'placar': abrirPlacar,
   'apagar-placar': apagarPlacar,
   'anotar': anotar,
+  'ajustar': abrirAjuste,
   'caderninho': abrirCaderninho,
   'menu': abrirMenu,
   'desfazer': () => desfazer(),
@@ -1895,10 +2216,16 @@ document.addEventListener('click', e => {
 document.addEventListener('change', e => {
   const t = e.target;
   if (t.matches('.escolha input[type="radio"]')) marcar(t.name.slice(2), t.value);
+  else if (t.matches('.passo-campo')) campoPontosMudou(t);
   else if (t.id === 'opt-tela-acesa') {
     estado.prefs.telaAcesa = t.checked;
     salvar();
     atualizarTelaAcesa();
+  } else if (t.id === 'opt-continuar') {
+    estado.preparo.continuar = t.checked;
+    if (!t.checked) estado.preparo.pontos = {};
+    salvar();
+    atualizarPreparo();
   }
 });
 
@@ -1911,6 +2238,9 @@ document.addEventListener('submit', e => {
   } else if (e.target.id === 'form-nomes') {
     e.preventDefault();
     salvarNomesCorrigidos(e.target);
+  } else if (e.target.id === 'form-ajuste') {
+    e.preventDefault();
+    salvarAjuste(e.target);
   }
 });
 
@@ -1918,6 +2248,8 @@ document.addEventListener('input', e => {
   if (e.target.id === 'campo-nome') {
     const erro = $('#erro-nome');
     if (erro) erro.textContent = '';
+  } else if (e.target.matches('.passo-campo[data-contexto="ajuste"]')) {
+    marcarMudancaAjuste(e.target);
   }
 });
 
@@ -1932,6 +2264,7 @@ document.addEventListener('visibilitychange', atualizarTelaAcesa);
 window.addEventListener('storage', e => {
   if (e.key === CHAVE) {
     estado = carregar(e.newValue);
+    aplicarTema();
     render();
   }
 });
@@ -1940,7 +2273,6 @@ window.addEventListener('storage', e => {
 // Início
 // ------------------------------------------------------------------
 document.documentElement.lang = 'pt-BR';
-
 aplicarTema();
 render();
 })();

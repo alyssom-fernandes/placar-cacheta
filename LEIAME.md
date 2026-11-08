@@ -20,7 +20,14 @@ Esses números podem ser mudados em **Regras da casa**, antes de começar a part
 2. A cada rodada, toque em **Correu** em quem correu e em **Ganhou** em quem bateu. Os outros ficam em **Perdeu** sozinhos.
 3. Confira os números riscados e toque em **Anotar rodada**. Errou? Toque em **Desfazer**.
 
+A tela da partida se ajusta ao número de pessoas e ocupa a tela inteira: com poucas pessoas, nomes, pontos e botões ficam grandes; com muitas, tudo fica mais compacto para caber sem rolar.
+
 O **Caderninho** mostra os pontos de cada um, rodada a rodada. Os dados ficam guardados só no aparelho em que o placar está aberto.
+
+## Pontos à mão
+
+- **Partida já começada** (na tela inicial): para continuar no celular uma partida que começou no papel. Ligue a opção e coloque os pontos de agora de cada um.
+- **Ajustar pontos** (no menu ⋯ durante a partida): para corrigir um engano. Quem ficar com 0 sai do jogo; quem voltar a ter pontos volta para a mesa. O ajuste aparece em azul no Caderninho e pode ser desfeito.
 
 ## Para mexer no código
 

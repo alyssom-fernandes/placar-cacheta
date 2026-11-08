@@ -268,6 +268,100 @@ teste('criar partida com menos de 2 pessoas dá erro', () => {
   assert.throws(() => nova(['Ana']), /poucos-jogadores/);
 });
 
+console.log('\nAjuste de pontos à mão\n');
+
+teste('ajuste muda só os pontos de quem foi alterado', () => {
+  const p = Motor.ajustar(nova(), { j0: 7, j1: 10, j2: 4 }, '');
+  assert.deepEqual(pts(p), { j0: 7, j1: 10, j2: 4, j3: 10 });
+  assert.deepEqual(p.rodadas[0], { tipo: 'ajuste', em: '', pontos: { j0: 7, j2: 4 } });
+});
+
+teste('ajuste não conta como rodada', () => {
+  let p = Motor.ajustar(nova(), { j0: 7 }, '');
+  assert.equal(Motor.situacao(p).jogadas, 0);
+  p = rodadas(p, [{ ganhou: 'j1' }]);
+  assert.equal(Motor.situacao(p).jogadas, 1);
+  assert.deepEqual(Motor.linhaDoTempo(p).map(l => [l.tipo, l.numero]), [['ajuste', null], ['rodada', 1]]);
+});
+
+teste('ajuste para 0 tira do jogo, e acima de 0 traz de volta para a mesa', () => {
+  let p = Motor.ajustar(nova(), { j3: 0 }, '');
+  let s = Motor.situacao(p);
+  assert.ok(!s.ativos.includes('j3'));
+  assert.equal(s.saiuNoAjuste.j3, true);
+  p = rodadas(p, [{ ganhou: 'j0' }]);
+  assert.equal(pts(p).j3, 0, 'quem está fora não perde pontos');
+  p = Motor.ajustar(p, { j3: 5 }, '');
+  s = Motor.situacao(p);
+  assert.ok(s.ativos.includes('j3'));
+  assert.ok(!('j3' in s.saiuNa));
+  p = rodadas(p, [{ ganhou: 'j3' }]);
+  assert.equal(pts(p).j3, 5);
+});
+
+teste('quem saiu jogando pode voltar com ajuste', () => {
+  let p = rodadas(nova(['Ana', 'Bia', 'Caio']), Array.from({ length: 5 }, () => ({ correu: ['j1'], ganhou: 'j0' })));
+  assert.equal(Motor.situacao(p).saiuNa.j2, 5);
+  p = Motor.ajustar(p, { j2: 3 }, '');
+  assert.deepEqual(Motor.situacao(p).ativos, ['j0', 'j1', 'j2']);
+});
+
+teste('ajuste que deixa menos de 2 pessoas com pontos é recusado', () => {
+  assert.throws(() => Motor.ajustar(nova(['Ana', 'Bia']), { j1: 0 }, ''), /poucos-com-pontos/);
+  assert.throws(() => Motor.ajustar(nova(), { j0: 0, j1: 0, j2: 0 }, ''), /poucos-com-pontos/);
+});
+
+teste('ajuste com valor inválido é recusado, e ajuste sem mudança não entra no histórico', () => {
+  for (const v of [-1, 100, 2.5, NaN, 'x']) assert.throws(() => Motor.ajustar(nova(), { j0: v }, ''), /valor-invalido/, String(v));
+  const p = nova();
+  assert.equal(Motor.ajustar(p, { j0: 10, j1: 10 }, ''), p);
+  assert.equal(Motor.ajustar(p, {}, ''), p);
+});
+
+teste('não dá para ajustar depois do fim da partida', () => {
+  const p = rodadas(nova(['Ana', 'Bia']), Array.from({ length: 5 }, () => ({ ganhou: 'j0' })));
+  assert.throws(() => Motor.ajustar(p, { j1: 4 }, ''), /partida-encerrada/);
+});
+
+teste('desfazer um ajuste volta os pontos e não traz marcações', () => {
+  const p0 = rodadas(nova(), [{ correu: ['j3'], ganhou: 'j0' }]);
+  const p1 = Motor.ajustar(p0, { j1: 2 }, '');
+  assert.deepEqual(pts(Motor.desfazer(p1)), pts(p0));
+  assert.deepEqual(Motor.marcasDaRodada(p1.rodadas[1]), {});
+});
+
+teste('com 1 ponto vindo de ajuste também não dá para correr', () => {
+  const p = Motor.ajustar(nova(), { j2: 1 }, '');
+  const a = Motor.avaliar(p, { j2: 'correu', j0: 'ganhou' });
+  assert.ok(a.jogaram.includes('j2'));
+  assert.deepEqual(a.saem, ['j2']);
+});
+
+teste('caderninho mostra o ajuste: quem mudou e quem ficou igual', () => {
+  const p = Motor.ajustar(rodadas(nova(), [{ ganhou: 'j0' }]), { j1: 9 }, '');
+  const l = Motor.linhaDoTempo(p)[1];
+  assert.equal(l.tipo, 'ajuste');
+  assert.deepEqual(l.celulas.j1, { tipo: 'ajuste', pontos: 9, perdeu: 0, saiu: false });
+  assert.deepEqual(l.celulas.j0, { tipo: 'igual', pontos: 10, perdeu: 0, saiu: false });
+});
+
+teste('classificação mostra quem saiu no ajuste', () => {
+  let p = Motor.ajustar(nova(['Ana', 'Bia', 'Caio']), { j2: 0 }, '');
+  p = rodadas(p, Array.from({ length: 5 }, () => ({ ganhou: 'j0' })));
+  assert.equal(Motor.situacao(p).campeao, 'j0');
+  assert.deepEqual(Motor.classificacao(p).map(c => [c.nome, c.posicao, c.noAjuste]), [['Ana', 1, false], ['Bia', 2, false], ['Caio', 3, true]]);
+});
+
+teste('partida com ajuste é salva e lida de volta igual; ajuste estragado é descartado', () => {
+  const p = Motor.ajustar(rodadas(nova(), [{ ganhou: 'j0' }]), { j1: 3, j3: 0 }, 'x');
+  assert.deepEqual(Motor.partidaValida(JSON.parse(JSON.stringify(p))), p);
+  for (const ruim of [{ j9: 3 }, { j1: -2 }, { j1: 1.5 }, {}, null]) {
+    const copia = JSON.parse(JSON.stringify(p));
+    copia.rodadas[1].pontos = ruim;
+    assert.equal(Motor.partidaValida(copia).rodadas.length, 1, JSON.stringify(ruim));
+  }
+});
+
 // Simulação: muitas partidas sorteadas, conferindo as regras rodada por rodada.
 function sorteador(semente) {
   let a = semente >>> 0;
@@ -280,11 +374,12 @@ function sorteador(semente) {
   };
 }
 
-teste('simulação: 3.000 partidas sorteadas seguem as regras do começo ao fim', () => {
+teste('simulação: 3.000 partidas sorteadas, com ajustes à mão no meio, seguem as regras do começo ao fim', () => {
   const sorte = sorteador(20261108);
   const escolhe = lista => lista[Math.floor(sorte() * lista.length)];
+  let totalAjustes = 0;
   for (let k = 0; k < 3000; k++) {
-    const qtd = 2 + Math.floor(sorte() * 8);
+    const qtd = 2 + Math.floor(sorte() * 11);
     const regras = sorte() < 0.5 ? Motor.REGRAS_PADRAO : {
       inicio: 1 + Math.floor(sorte() * 30),
       correr: 1 + Math.floor(sorte() * 5),
@@ -292,8 +387,8 @@ teste('simulação: 3.000 partidas sorteadas seguem as regras do começo ao fim'
     };
     let p = nova(Array.from({ length: qtd }, (_, i) => `P${i}`), regras);
     const r = p.regras;
-    const somaInicial = qtd * r.inicio;
     let voltas = 0;
+    let ajustes = 0;
     for (;;) {
       const s = Motor.situacao(p);
       if (s.acabou) {
@@ -303,7 +398,25 @@ teste('simulação: 3.000 partidas sorteadas seguem as regras do começo ao fim'
         assert.equal(Motor.classificacao(p)[0].id, s.campeao);
         break;
       }
-      assert.ok(++voltas <= somaInicial, 'a partida precisa acabar');
+      assert.ok(++voltas <= 5000, 'a partida precisa acabar');
+      if (ajustes < 3 && sorte() < 0.05) {
+        const valores = {};
+        for (const j of p.jogadores) if (sorte() < 0.4) valores[j.id] = Math.floor(sorte() * 13);
+        const comPontos = p.jogadores.filter(j => (j.id in valores ? valores[j.id] : s.pontos[j.id]) > 0).length;
+        if (comPontos < 2) {
+          assert.throws(() => Motor.ajustar(p, valores, ''), /poucos-com-pontos/);
+        } else {
+          const q = Motor.ajustar(p, valores, '');
+          const depoisAjuste = Motor.situacao(q);
+          for (const [id, v] of Object.entries(valores)) assert.equal(Math.max(0, depoisAjuste.pontos[id]), v, 'o ajuste vale o que foi digitado');
+          for (const j of p.jogadores) if (!(j.id in valores)) assert.equal(depoisAjuste.pontos[j.id], s.pontos[j.id], 'quem não foi ajustado não muda');
+          assert.equal(depoisAjuste.jogadas, s.jogadas, 'ajuste não conta como rodada');
+          p = q;
+          ajustes += 1;
+          totalAjustes += 1;
+          continue;
+        }
+      }
       const marcas = {};
       for (const id of s.ativos) if (sorte() < 0.35) marcas[id] = 'correu';
       let a = Motor.avaliar(p, marcas, s);
@@ -332,6 +445,7 @@ teste('simulação: 3.000 partidas sorteadas seguem as regras do começo ao fim'
       }
       for (const j of p.jogadores) if (!s.ativos.includes(j.id)) assert.equal(depois[j.id], antes[j.id], 'quem já saiu não muda');
     }
+    assert.equal(Motor.situacao(p).jogadas, p.rodadas.filter(x => !Motor.ehAjuste(x)).length);
     // desfazer tudo volta ao começo
     let q = p;
     while (q.rodadas.length) q = Motor.desfazer(q);
@@ -339,6 +453,7 @@ teste('simulação: 3.000 partidas sorteadas seguem as regras do começo ao fim'
     // a partida salva e lida de volta continua igual
     assert.deepEqual(Motor.partidaValida(JSON.parse(JSON.stringify(p))), p);
   }
+  assert.ok(totalAjustes > 100, `a simulação precisa exercitar ajustes (fez ${totalAjustes})`);
 });
 
 console.log(`\n${total - falhas} de ${total} testes passaram.${falhas ? ` ${falhas} falharam.` : ''}\n`);
